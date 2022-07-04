@@ -14,7 +14,7 @@ from datetime import datetime
 from tkinter import filedialog
 
 """
-    Possibly look at searching the title of the disc with google api first before passing it to title to the imdb
+    Possibly look at searching the title of the disc with googlesearch api first before passing it to title to the imdb
     api. This might help with false positives for movie names.
     
     TO DO:
@@ -44,8 +44,6 @@ stop_thread = threading.Event()
 switch_is_off = True
 off = PhotoImage(file="start_button.png")
 on = PhotoImage(file="stop_button.png")
-
-
 
 
 class Directories:
@@ -259,6 +257,7 @@ class Transcode_And_Move:
 def movie_collection():
     global collection_dir
     collection_dir = filedialog.askdirectory()
+    
     return collection_dir
 
 
@@ -433,9 +432,6 @@ start_button.place(x=372, y=230)
 
 refresh = Window_Refresh()
 threading.Thread(target=refresh.re_fresh).start()
-
-
-
 
 
 root.mainloop()
