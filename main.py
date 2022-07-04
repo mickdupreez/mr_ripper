@@ -182,6 +182,10 @@ class Transcode_And_Move:
 
     def transcode(self):
         while switch_is_off == False:
+            directories = Directories()
+            self.compressed = directories.compressed    
+            self.transcoding = directories.transcoding
+            self.uncompressed = directories.uncompressed
             global stop_thread
             if stop_thread.is_set():
                 break
