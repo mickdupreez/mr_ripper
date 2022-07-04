@@ -153,9 +153,9 @@ class Disc_In_Tray:
                 print(f"{self.uncompressed}{self.movie_title}/{self.movie_title}U.mkv")
                 
                 try:
-                    with ProgressParser() as progress:
-                        makemkv = MakeMKV(0, progress_handler=progress.parse_progress) # Creating an instance of MakeMKV
-                        makemkv.mkv(0, self.temp) # Using MakeMKV top make rip the DVD to the temp directory
+                    #with ProgressParser() as progress:
+                    makemkv = MakeMKV(0)#, progress_handler=progress.parse_progress) # Creating an instance of MakeMKV
+                    makemkv.mkv(0, self.temp) # Using MakeMKV top make rip the DVD to the temp directory
                 except Exception:
                     print("Error reading disc")
                     ctypes.windll.WINMM.mciSendStringW(u"set cdaudio door open", None, 0, None) # Open the disc tray
