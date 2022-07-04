@@ -145,12 +145,8 @@ class Disc_In_Tray:
                 break
             if self.movie_title != "No Disc!":
             #try: # Try to rip the correct video and audio files from the DVD
-                print("1")
                 directory = os.listdir(self.temp)
-                print("2")
                 #print(f"{self.temp}{directory[0]}")
-                print(f"{self.uncompressed}{self.movie_title}")
-                print(f"{self.uncompressed}{self.movie_title}/{self.movie_title}U.mkv")
                 
                 try:
                     #with ProgressParser() as progress:
