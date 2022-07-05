@@ -229,10 +229,10 @@ class Transcode_And_Move:
                         [ # This is a list of the arguments for the handbrake command.
                         f"{command} {import_prest_file} {preset_file} {select_profile} {profile} {input_file} {uncompressed_file} {output_file} {compressed_file}"
                         ],
-                        shell=True, # Use the shell.
-                        stdout=subprocess.DEVNULL, # Send output to DEVNULL.
-                        stderr=subprocess.DEVNULL # Send errors to DEVNULL.
-                        )
+                        shell=True) # Use the shell.
+                        #stdout=subprocess.DEVNULL, # Send output to DEVNULL.
+                        #stderr=subprocess.DEVNULL # Send errors to DEVNULL.
+                        #)
                 elif check_os[0:3] == "Win": # Windows only
                     command = "HandBrakeCLI.exe" # An argument for the handbrake command.
                     preset_file = "profile.json" # An argument for the handbrake command.
@@ -243,10 +243,10 @@ class Transcode_And_Move:
                     ]
                     subprocess.run( # This is where the all the arguments are passed to handbrake to transcode the file.
                         command, # The list of commands.
-                        shell=True, # Use the shell.
-                        stdout=subprocess.DEVNULL, # Send output to DEVNULL.
-                        stderr=subprocess.DEVNULL # Send errors to DEVNULL.
-                        )
+                        shell=True) # Use the shell.
+                        #stdout=subprocess.DEVNULL, # Send output to DEVNULL.
+                        #stderr=subprocess.DEVNULL # Send errors to DEVNULL.
+                        #)
                 os.remove(f"{self.transcoding}{movie_directory}/{file}") # Remove the uncompressed file
                 shutil.move(f"{self.transcoding}{movie_directory}", f"{self.compressed}{movie_directory}") # Move the movie directory to the compressed directory.
                 uncompressed_list.pop(0)
