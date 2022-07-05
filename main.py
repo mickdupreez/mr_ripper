@@ -284,7 +284,7 @@ intro = """     Welcome to Mr Ripper's Movie Ripper.
     add it to your media collection.
 
 
-Mr Ripper Beta release 0.0.5
+Mr Ripper.v0.1.1-beta 
 
 """
 
