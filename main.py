@@ -32,7 +32,7 @@ from tkinter import filedialog
 root = Tk()
 root.title("Mr Ripper")
 root.iconbitmap("icon.ico")
-root.geometry("1901x1100")
+root.geometry("1476x900")
 root.resizable(False, False)
 global switch_is_off
 global stop_thread
@@ -258,7 +258,7 @@ class Transcode_And_Move:
 def movie_collection():
     global collection_dir
     collection_dir = filedialog.askdirectory()
-    
+
     return collection_dir
 
 
@@ -290,18 +290,19 @@ Mr Ripper.v0.1.1-beta
 
 
 
-background = PhotoImage(file="background.png")
+background = PhotoImage(file="testing_poster.png")
 back_ground = Label(image=background)
-back_ground.place(x=0, y=0, relwidth=1, relheight=1)
+back_ground.place(x=450, y=0)
+
 
 ui_frame = LabelFrame(root, text="...Loading...", bg="#44424d", font=("Comic Sans MS",18, "bold"), padx=10, pady=10, fg="#e96163")
-ui_frame.place(x=2, y=2, width=450, height=900)
+ui_frame.place(x=0, y=0, width=450, height=900)
 intro_label = Label(ui_frame, text=intro, width=0, bg="#44424d", fg="#e96163", font=("Comic Sans MS", 13, "bold"))
 intro_label.place(x=0, y=0)
 
 
 ui2_frame = LabelFrame(root, text="Movie Collection", bg="#44424d", font=("Comic Sans MS",18, "bold"), padx=10, pady=10, fg="#e96163")
-ui2_frame.place(x=1110, y=2, width=450, height=900)
+ui2_frame.place(x=1028, y=0, width=450, height=900)
 testing_listbox = Listbox(ui2_frame, bg="#44424d", fg="#e96163", width=47, height=20, bd=0, font=("Comic Sans MS", 11))
 testing_listbox.place(x=1, y=404)
 
