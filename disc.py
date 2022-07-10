@@ -1,6 +1,9 @@
+from email.mime import image
+from lib2to3.pgen2 import driver
 import os
 import re
 import time
+from turtle import back
 from googlesearch import search
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
@@ -23,9 +26,103 @@ from PIL import Image as Im
 
 
 
-
+root = Tk()
+root.title("Mr Ripper")
+root.iconbitmap("icon.ico")
+root.geometry("1473x900")
+root.resizable(False, False)
+off = PhotoImage(file="start_button.png")
+on = PhotoImage(file="stop_button.png")
 global IMDB_Movie_Title
 IMDB_Movie_Title = None
+global IMDB_Movie_Poster
+IMDB_Movie_Poster = None
+global collection_dir
+collection_dir = None
+global collection
+collection = []
+global drive_ready
+drive_ready = True
+
+def movie_collection():
+    global collection_dir
+    collection_dir = filedialog.askdirectory()
+    return collection_dir
+
+
+
+
+
+completed = """
+
+Completed
+Movies:
+"""
+button_text = """Auto Rip and Transcode the Movie
+Click the Button to START or STOP """
+
+instructions = """
+Click the Movies
+in this list
+to check if the
+transcode was
+successful.
+"""
+intro = """     Welcome to Mr Ripper's Movie Ripper.
+    This Program will Automatically Rip and
+    Transcode and Blu-Ray or DVD Movie then
+    add it to your media collection.
+
+
+Mr Ripper.v0.1.1-beta 
+
+"""
+
+
+
+background = PhotoImage(file="default.png")
+back_ground = Label(image=background)
+back_ground.place(x=447, y=0)
+
+
+ui_frame = LabelFrame(root, text="...Loading...", bg="#44424d", font=("Comic Sans MS",18, "bold"), padx=10, pady=10, fg="#e96163")
+ui_frame.place(x=0, y=2, width=450, height=900)
+intro_label = Label(ui_frame, text=intro, width=0, bg="#44424d", fg="#e96163", font=("Comic Sans MS", 13, "bold"))
+intro_label.place(x=0, y=0)
+
+
+ui2_frame = LabelFrame(root, text="Movie Collection", bg="#44424d", font=("Comic Sans MS",18, "bold"), padx=10, pady=10, fg="#e96163")
+ui2_frame.place(x=1025, y=2, width=450, height=900)
+testing_listbox = Listbox(ui2_frame, bg="#44424d", fg="#e96163", width=47, height=20, bd=0, font=("Comic Sans MS", 11))
+testing_listbox.place(x=1, y=404)
+
+testing_select_dir_button = Button(ui2_frame, text="Select Directory", command=movie_collection)
+testing_select_dir_button.place(x=1, y=1)
+
+
+ripping_dir_label = Label(ui_frame, text="Preparing...", width=0, bg="#44424d", fg="#e96163", font=("Comic Sans MS",12, "bold"))
+ripping_dir_label.place(x=0, y=300)
+ripping_dir_listbox = Listbox(ui_frame, bg="#44424d", fg="#e96163", width=35, height=1, bd=0, font=("Comic Sans MS", 11))
+ripping_dir_listbox.place(x=110, y=300)
+
+ripped_dir_label = Label(ui_frame, text="In the Que", width=0, bg="#44424d", fg="#e96163", font=("Comic Sans MS",12, "bold"))
+ripped_dir_label.place(x=0, y=340)
+ripped_dir_listbox = Listbox(ui_frame, bg="#44424d", fg="#e96163", width=35, height=3, bd=0, font=("Comic Sans MS", 11))
+ripped_dir_listbox.place(x=110, y=322)
+
+transcoding_dir_label = Label(ui_frame, text="Working...", width=0, bg="#44424d", fg="#e96163", font=("Comic Sans MS",12, "bold"))
+transcoding_dir_label.place(x=0, y=380)
+transcoding_dir_listbox = Listbox(ui_frame, bg="#44424d", fg="#e96163", width=35, height=1, bd=0, font=("Comic Sans MS", 11))
+transcoding_dir_listbox.place(x=110, y=382)
+
+transcoded_dir_label = Label(ui_frame, text=completed, width=0, bg="#44424d", fg="#e96163", font=("Comic Sans MS",12, "bold"))
+transcoded_dir_label.place(x=0, y=404)
+transcoded_instructions_label = Label(ui_frame, text=instructions,  bg="#44424d", fg="#e96163", font=("Comic Sans MS",10))
+transcoded_instructions_label.place(x=0, y=544)
+
+transcoded_dir_listbox = Listbox(ui_frame, bg="#44424d", fg="#e96163", width=35, height=20, bd=0, font=("Comic Sans MS", 11))
+transcoded_dir_listbox.place(x=110, y=404)
+
 
 
 
@@ -97,6 +194,8 @@ class Rip_Scrape_Transcode:
         try: # Try checking if the is a disc in the tray if so continuing.
             drive_letter = "E:/" # This the the letter that has been assigned to the disc drive.
             win32api.GetVolumeInformation(drive_letter)
+            global drive_ready
+            drive_ready = False
             try: # Try to use MakeMKV method to get info from disc.
                 disc_info = MakeMKV(drive_letter).info() # variable that stores ALL the disc info.
                 disc_title = disc_info["disc"]["name"] # variable that stores just the disc name.
@@ -125,7 +224,7 @@ class Rip_Scrape_Transcode:
             ## IMPORTANT NOTE - options.headless set to False to see the browser being scraped.
             user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36"
             options = webdriver.ChromeOptions() # Variable that stores the browser options.
-            options.headless = False # Makes the scraping happen in the back ground.
+            options.headless = True # Makes the scraping happen in the back ground.
             # These next .add_arguments are used to optimize the efficiency and speed of the scraping.
             options.add_argument("--silent")
             options.add_argument(f'user-agent={user_agent}')
@@ -165,9 +264,14 @@ class Rip_Scrape_Transcode:
                     poster_width = int((float(poster.size[0]) * float(hight_percent))) # Variable that stores the poster width.
                     poster = poster.resize((poster_width, poster_hight), Im.Resampling.LANCZOS) # Variable that stores the resized poster image.
                     poster.save(f"{Directories().temp+self.Movie_Title}/{self.Movie_Title}.png") # Save poster image the the temp/self.movie_title directory.
-                    self.Movie_Poster = f"{Directories().temp+self.Movie_Title}/{self.Movie_Title}.png" # Variable that stores the poster image location
-                    #back_ground.config(image=self.Movie_Poster)
+                    self.Movie_Poster = f"{Directories().temp+self.Movie_Title}/{self.Movie_Title}.png"
+                    shutil.copyfile(self.Movie_Poster, "temp.png")
+                    self.Movie_Poster = PhotoImage(file="temp.png") # Variable that stores the poster image location
+                    time.sleep(1) #
+                    back_ground.config(image=self.Movie_Poster)
                     os.remove("temp.jpg")
+                    os.remove("temp.png")
+                    
                 else:
                     pass
             browser.quit() # Quit the browser after scraping completes.
@@ -175,16 +279,19 @@ class Rip_Scrape_Transcode:
 
 ######## SECTION 5: 
             if self.Movie_Title != None:
-                #try:
-                #    makemkv = MakeMKV(0) # Creating an instance of MakeMKV
-                #    makemkv.mkv(0, f"{Directories().temp+self.Movie_Title}") # Using MakeMKV top make rip the DVD to the temp directory
-                #except Exception:
-                #    ctypes.windll.WINMM.mciSendStringW(u"set cdaudio door open", None, 0, None) # Open the disc tray
+                try:
+                    makemkv = MakeMKV(0) # Creating an instance of MakeMKV
+                    makemkv.mkv(0, f"{Directories().temp+self.Movie_Title}") # Using MakeMKV top make rip the DVD to the temp directory
+                except Exception:
+                    ctypes.windll.WINMM.mciSendStringW(u"set cdaudio door open", None, 0, None) # Open the disc tray
+                drive_ready = True
                 try:
                     file_location = f"{Directories().temp+self.Movie_Title}" # The location of the file
                     file_destination = f"{Directories().uncompressed+self.Movie_Title}" # The destination of the files one ripping has completed.
                     shutil.move(file_location, file_destination) # Move the file from the temp directory to the uncompressed directory
                     ctypes.windll.WINMM.mciSendStringW(u"set cdaudio door open", None, 0, None) # Open the disc tray
+                    back_ground.config(image=background)
+                    drive_ready = True
                 except IndexError:
                     pass
             else:
@@ -226,6 +333,19 @@ class Rip_Scrape_Transcode:
         else:
             self.Movie_Poster = None #
             self.Movie_Title = None #
-            
-            
-Rip_Scrape_Transcode()
+
+def rip_scrape_transcode():
+    while True:
+        if drive_ready:
+            Rip_Scrape_Transcode()
+        else:
+            print("no")
+            time.sleep(10)
+
+
+
+#threading.Thread(target=Rip_Scrape_Transcode).start()
+#threading.Thread(target=refresh.re_fresh).start()
+#threading.Thread(target=rip_scrape_transcode).start()
+
+root.mainloop()

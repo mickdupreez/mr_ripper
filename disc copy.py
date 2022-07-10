@@ -1,7 +1,9 @@
 from email.mime import image
+from lib2to3.pgen2 import driver
 import os
 import re
 import time
+from turtle import back
 from googlesearch import search
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
@@ -27,26 +29,25 @@ from PIL import Image as Im
 root = Tk()
 root.title("Mr Ripper")
 root.iconbitmap("icon.ico")
-root.geometry("1476x900")
+root.geometry("1473x900")
 root.resizable(False, False)
 off = PhotoImage(file="start_button.png")
 on = PhotoImage(file="stop_button.png")
+collection = []
 global IMDB_Movie_Title
 IMDB_Movie_Title = None
 global IMDB_Movie_Poster
 IMDB_Movie_Poster = None
 global collection_dir
 collection_dir = None
-global collection
 collection = []
+global drive_ready
+drive_ready = True
 
 def movie_collection():
     global collection_dir
     collection_dir = filedialog.askdirectory()
     return collection_dir
-
-
-
 
 
 completed = """
@@ -70,25 +71,23 @@ intro = """     Welcome to Mr Ripper's Movie Ripper.
     add it to your media collection.
 
 
-Mr Ripper.v0.1.1-beta 
+Mr Ripper.v0.1.2-beta 
 
 """
 
-
-
 background = PhotoImage(file="default.png")
 back_ground = Label(image=background)
-back_ground.place(x=450, y=0)
+back_ground.place(x=447, y=0)
 
 
 ui_frame = LabelFrame(root, text="...Loading...", bg="#44424d", font=("Comic Sans MS",18, "bold"), padx=10, pady=10, fg="#e96163")
-ui_frame.place(x=0, y=0, width=450, height=900)
+ui_frame.place(x=0, y=2, width=450, height=900)
 intro_label = Label(ui_frame, text=intro, width=0, bg="#44424d", fg="#e96163", font=("Comic Sans MS", 13, "bold"))
 intro_label.place(x=0, y=0)
 
 
 ui2_frame = LabelFrame(root, text="Movie Collection", bg="#44424d", font=("Comic Sans MS",18, "bold"), padx=10, pady=10, fg="#e96163")
-ui2_frame.place(x=1028, y=0, width=450, height=900)
+ui2_frame.place(x=1025, y=2, width=450, height=900)
 testing_listbox = Listbox(ui2_frame, bg="#44424d", fg="#e96163", width=47, height=20, bd=0, font=("Comic Sans MS", 11))
 testing_listbox.place(x=1, y=404)
 
@@ -190,6 +189,8 @@ class Rip_Scrape_Transcode:
         try: # Try checking if the is a disc in the tray if so continuing.
             drive_letter = "E:/" # This the the letter that has been assigned to the disc drive.
             win32api.GetVolumeInformation(drive_letter)
+            global drive_ready
+            drive_ready = False
             try: # Try to use MakeMKV method to get info from disc.
                 disc_info = MakeMKV(drive_letter).info() # variable that stores ALL the disc info.
                 disc_title = disc_info["disc"]["name"] # variable that stores just the disc name.
@@ -258,12 +259,13 @@ class Rip_Scrape_Transcode:
                     poster_width = int((float(poster.size[0]) * float(hight_percent))) # Variable that stores the poster width.
                     poster = poster.resize((poster_width, poster_hight), Im.Resampling.LANCZOS) # Variable that stores the resized poster image.
                     poster.save(f"{Directories().temp+self.Movie_Title}/{self.Movie_Title}.png") # Save poster image the the temp/self.movie_title directory.
+                    self.Movie_Poster = f"{Directories().temp+self.Movie_Title}/{self.Movie_Title}.png"
                     shutil.copyfile(self.Movie_Poster, "temp.png")
                     self.Movie_Poster = PhotoImage(file="temp.png") # Variable that stores the poster image location
                     time.sleep(1) #
                     back_ground.config(image=self.Movie_Poster)
-                    shutil.rmtree("temp.jpg")
-                    shutil.rmtree("temp.png")
+                    os.remove("temp.jpg")
+                    os.remove("temp.png")
                     
                 else:
                     pass
@@ -272,142 +274,123 @@ class Rip_Scrape_Transcode:
 
 ######## SECTION 5: 
             if self.Movie_Title != None:
-                #try:
-                #    makemkv = MakeMKV(0) # Creating an instance of MakeMKV
-                #    makemkv.mkv(0, f"{Directories().temp+self.Movie_Title}") # Using MakeMKV top make rip the DVD to the temp directory
-                #except Exception:
-                #    ctypes.windll.WINMM.mciSendStringW(u"set cdaudio door open", None, 0, None) # Open the disc tray
+                try:
+                    makemkv = MakeMKV(0) # Creating an instance of MakeMKV
+                    makemkv.mkv(0, f"{Directories().temp+self.Movie_Title}") # Using MakeMKV top make rip the DVD to the temp directory
+                except Exception:
+                    ctypes.windll.WINMM.mciSendStringW(u"set cdaudio door open", None, 0, None) # Open the disc tray
+                drive_ready = True
                 try:
                     file_location = f"{Directories().temp+self.Movie_Title}" # The location of the file
                     file_destination = f"{Directories().uncompressed+self.Movie_Title}" # The destination of the files one ripping has completed.
                     shutil.move(file_location, file_destination) # Move the file from the temp directory to the uncompressed directory
                     ctypes.windll.WINMM.mciSendStringW(u"set cdaudio door open", None, 0, None) # Open the disc tray
+                    back_ground.config(image=background)
+                    drive_ready = True
                 except IndexError:
                     pass
             else:
                 pass
 
 ######## SECTION 6:
-            #def transcode():
-            #    if os.path.exists(f"{Directories().transcoding+self.Movie_Title}"):
-            #        shutil.rmtree(f"{Directories().transcoding+self.Movie_Title}")
-            #    else:
-            #        pass
-            #    try:
-            #        shutil.move(f"{Directories().uncompressed+self.Movie_Title}",
-            #                    f"{Directories().transcoding+self.Movie_Title}")
-            #        time.sleep(3) # Waiting for 3 seconds before continuing
-            #    except shutil.Error:
-            #        time.sleep(5) # Waiting for 5 seconds before continuing
-            #        shutil.move(f"{Directories().uncompressed+self.Movie_Title}",
-            #                    f"{Directories().transcoding+self.Movie_Title}")
-            #        time.sleep(3)
-#
-            #    for file in os.listdir(f"{Directories().transcoding+self.Movie_Title}"):
-            #        if file.endswith(".mkv"):
-            #            uncompressed_file =  file
-            #            command  = [ # This is a list of the arguments for the handbrake command.
-            #                "HandBrakeCLI.exe", "--preset-import-file", "profile.json", "-Z", "PLEX",
-            #                "-i", f"{Directories().transcoding+self.Movie_Title}/{uncompressed_file}", "-o",
-            #                f"{Directories().transcoding+self.Movie_Title}/{self.Movie_Title}.mkv"
-            #            ]
-            #            subprocess.run( # This is where the all the arguments are passed to handbrake to transcode the file.
-            #                command, # The list of commands.
-            #                shell=True) # Use the shell.
-            #            os.remove(f"{Directories().transcoding+self.Movie_Title}/{uncompressed_file}")
-            #            shutil.move(f"{Directories().transcoding+self.Movie_Title}", 
-            #                        f"{Directories().compressed+self.Movie_Title}")
-            #        else:
-            #            pass
-            #threading.Thread(target=transcode).start()
+            def transcode():
+                if os.path.exists(f"{Directories().transcoding+self.Movie_Title}"):
+                    shutil.rmtree(f"{Directories().transcoding+self.Movie_Title}")
+                else:
+                    pass
+                try:
+                    shutil.move(f"{Directories().uncompressed+self.Movie_Title}",
+                                f"{Directories().transcoding+self.Movie_Title}")
+                    time.sleep(3) # Waiting for 3 seconds before continuing
+                except shutil.Error:
+                    time.sleep(5) # Waiting for 5 seconds before continuing
+                    shutil.move(f"{Directories().uncompressed+self.Movie_Title}",
+                                f"{Directories().transcoding+self.Movie_Title}")
+                    time.sleep(3)
+
+                for file in os.listdir(f"{Directories().transcoding+self.Movie_Title}"):
+                    if file.endswith(".mkv"):
+                        uncompressed_file =  file
+                        command  = [ # This is a list of the arguments for the handbrake command.
+                            "HandBrakeCLI.exe", "--preset-import-file", "profile.json", "-Z", "PLEX",
+                            "-i", f"{Directories().transcoding+self.Movie_Title}/{uncompressed_file}", "-o",
+                            f"{Directories().transcoding+self.Movie_Title}/{self.Movie_Title}.mkv"
+                        ]
+                        subprocess.run( # This is where the all the arguments are passed to handbrake to transcode the file.
+                            command, # The list of commands.
+                            shell=True) # Use the shell.
+                        os.remove(f"{Directories().transcoding+self.Movie_Title}/{uncompressed_file}")
+                        shutil.move(f"{Directories().transcoding+self.Movie_Title}", 
+                                    f"{Directories().compressed+self.Movie_Title}")
+                    else:
+                        pass
+            threading.Thread(target=transcode).start()
         else:
             self.Movie_Poster = None #
             self.Movie_Title = None #
 
+def movie_collection():
+    global collection_dir
+    collection_dir = filedialog.askdirectory()
+
+    return collection_dir
+
+def rip_scrape_transcode():
+    while True:
+        if drive_ready:
+            Rip_Scrape_Transcode()
+            pass
+        else:
+            print("no")
+            time.sleep(10)
+            
+            
+            
+        if collection_dir != None:
+            for letter in os.listdir(collection_dir):
+                for movie in os.listdir(f"{collection_dir}/{letter}"):
+                    if movie not in collection:
+                        collection.append(movie)
+                    else:
+                        pass
+            if len(collection) != len(testing_listbox.get(0, END)):
+                testing_listbox.delete(0, END)
+                for letter in os.listdir(collection_dir):
+                    for movie in os.listdir(f"{collection_dir}/{letter}"):
+                        if movie not in testing_listbox.get(0, END):
+                            testing_listbox.insert(END, f" {movie}")
+                        else:
+                            pass
+            else:
+                pass
+        else:
+            pass
+
+        if len(Directories().compressed_list) != len(transcoded_dir_listbox.get(0, END)):
+            transcoded_dir_listbox.delete(0, END)
+            for i in Directories().compressed_list:
+                transcoded_dir_listbox.insert(END, f" {i}")
+
+        if len(Directories().transcoding_list) != len(transcoding_dir_listbox.get(0, END)):
+            transcoding_dir_listbox.delete(0, END)
+            for i in Directories().transcoding_list:
+                transcoding_dir_listbox.insert(END, f" {i}")
+
+        if len(Directories().temp_list) != len(ripping_dir_listbox.get(0, END)):
+            ripping_dir_listbox.delete(0, END)
+            for i in Directories().temp_list:
+                ripping_dir_listbox.insert(END, f" {i}")
+
+        if len(Directories().uncompressed_list) != len(ripped_dir_listbox.get(0, END)):
+            ripped_dir_listbox.delete(0, END)
+            for i in Directories().uncompressed_list:
+                ripped_dir_listbox.insert(END, f" {i}")
+
+        time.sleep(.8) # Wait .8 seconds before continuing.
 
 
 
 
-class Window_Refresh:
-    
-    def __init__(self):
-        pass
-
-
-
-    def re_fresh(self):
-        pass
-        #while True:
-        #    self.Dir = Directories()
-        #    self.disc_info = Disc_In_Tray()
-        #    if self.disc_info != False:
-        #        ui_frame.config(text=self.disc_info.movie_title)
-        #    else:
-        #        ui_frame.config(text="Waiting for A Disc")
-#
-        #    if collection_dir != None:
-        #        for letter in os.listdir(collection_dir):
-        #            for movie in os.listdir(f"{collection_dir}/{letter}"):
-        #                if movie not in collection:
-        #                    collection.append(movie)
-        #                else:
-        #                    pass
-        #        if len(collection) != len(testing_listbox.get(0, END)):
-        #            testing_listbox.delete(0, END)
-        #            for letter in os.listdir(collection_dir):
-        #                for movie in os.listdir(f"{collection_dir}/{letter}"):
-        #                    if movie not in testing_listbox.get(0, END):
-        #                        testing_listbox.insert(END, f" {movie}")
-        #                    else:
-        #                        pass
-        #        else:
-        #            pass
-        #    else:
-        #        pass
-#
-        #    transcoded_dir_length = len(self.Dir.compressed_list)
-        #    transcoded_dir_listbox_length = len(transcoded_dir_listbox.get(0, END))
-        #    if transcoded_dir_length != transcoded_dir_listbox_length:
-        #        transcoded_dir_listbox.delete(0, END)
-        #        for i in self.Dir.compressed_list:
-        #            transcoded_dir_listbox.insert(END, f" {i}")
-        #    else:
-        #        pass
-        #    transcoding_dir_length = len(self.Dir.transcoding_list)
-        #    transcoding_dir_listbox_length = len(transcoding_dir_listbox.get(0, END))
-        #    if transcoding_dir_length != transcoding_dir_listbox_length:
-        #        transcoding_dir_listbox.delete(0, END)
-        #        for i in self.Dir.transcoding_list:
-        #            transcoding_dir_listbox.insert(END, f" {i}")
-        #    else:
-        #        pass
-        #    ripped_dir_length = len(self.Dir.uncompressed_list)
-        #    ripped_dir_listbox_length = len(ripped_dir_listbox.get(0, END))
-        #    if ripped_dir_length != ripped_dir_listbox_length:
-        #        ripped_dir_listbox.delete(0, END)
-        #        for i in self.Dir.uncompressed_list:
-        #            ripped_dir_listbox.insert(END, f" {i}")
-        #    else:
-        #        pass
-        #    ripping_dir_length = len(self.Dir.temp_list)
-        #    ripping_dir_listbox_length = len(ripping_dir_listbox.get(0, END))
-        #    if ripping_dir_length != ripping_dir_listbox_length:
-        #        ripping_dir_listbox.delete(0, END)
-        #        for i in self.Dir.temp_list:
-        #            ripping_dir_listbox.insert(END, f" {i}")
-        #    else:
-        #        pass
-        #    time.sleep(.8) # Wait .8 seconds before continuing.
-
-
-
-#def reaper():
-#    threading.Thread(target=Rip_Scrape_Transcode).start()
-
-
-
-threading.Thread(target=Rip_Scrape_Transcode).start()
-#threading.Thread(target=refresh.re_fresh).start()
-
+threading.Thread(target=rip_scrape_transcode).start()
 
 root.mainloop()
