@@ -31,8 +31,6 @@ root.title("Mr Ripper")
 root.iconbitmap("icon.ico")
 root.geometry("1473x900")
 root.resizable(False, False)
-off = PhotoImage(file="start_button.png")
-on = PhotoImage(file="stop_button.png")
 collection = []
 global IMDB_Movie_Title
 IMDB_Movie_Title = None
