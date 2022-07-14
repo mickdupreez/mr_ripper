@@ -396,6 +396,9 @@ class Rip_Scrape_Transcode:
                 threading.Thread(target=transcode).start()
                 ctypes.windll.WINMM.mciSendStringW(u"set cdaudio door open", None, 0, None) # Open the disc tray
                 print(self.Movie_Title+" has finished ripping and is now transcoding.")
+                time.sleep(10)
+                self.Movie_Poster = None #
+                self.Movie_Title = None #
                 drive_ready = True
             else:
                 self.Movie_Poster = None #
