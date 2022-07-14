@@ -25,9 +25,8 @@ import imdb
 root = Tk()
 root.title("Mr Ripper")
 root.iconbitmap("icon.ico")
-root.geometry("1473x900")
+root.geometry("1491x900")
 root.resizable(False, False)
-collection = []
 global IMDB_Movie_Title
 IMDB_Movie_Title = None
 global IMDB_Movie_Poster
@@ -41,32 +40,37 @@ drive_ready = None
 def movie_collection():
     global collection_dir
     collection_dir = filedialog.askdirectory()
+    print(collection_dir)
+    testing_select_dir_button.destroy()
     return collection_dir
 
+grey = "#1e1f1f"
+turquoise = "#5cf0c2"
+pink = "#e96163"
+green = "#a7e961"
+purple = "#a361e9"
 
-completed = """
 
-Completed
-Movies:
-"""
-button_text = """Auto Rip and Transcode the Movie
-Click the Button to START or STOP """
-
-instructions = """
-Click the Movies
-in this list
-to check if the
-transcode was
-successful.
-"""
 intro = """     Welcome to Mr Ripper's Movie Ripper.
     This Program will Automatically Rip and
-    Transcode and Blu-Ray or DVD Movie then
+    Transcode and Blu-Ray or DVD Movies.
     add it to your media collection.
+    
+"""
+instructions1 = """This list below contains successfully transcoded movies.
+Once verified, the file will br moved to your collection."""
 
+instructions2 = """This list below contains all the movies in your collection.
+Click on a movie to preview movie description and poster."""
 
-Mr Ripper.v0.1.2-beta 
+instructions3 = """
 
+PLEASE CLICK HERE TO SELECT COLLECTION
+DIRECTORY.
+
+If the directory does not contain the
+subdirectories A-Z, then they will be 
+created for you.
 """
 
 background = PhotoImage(file="default.png")
@@ -74,45 +78,72 @@ back_ground = Label(image=background)
 back_ground.place(x=447, y=0)
 
 
-ui_frame = LabelFrame(root, text="...Loading...", bg="#1e1f1f", font=("Comic Sans MS",18, "bold"), padx=10, pady=10, fg="#e96163")
-ui_frame.place(x=0, y=2, width=450, height=900)
-intro_label = Label(ui_frame, text=intro, width=0, bg="#1e1f1f", fg="#e96163", font=("Comic Sans MS", 13, "bold"))
+ui_frame1 = LabelFrame(
+    root, text="Mr Ripper.v0.1.2-beta",
+    bg=grey, font=("Comic Sans MS",18, "bold"),
+    padx=10, pady=10, fg=purple
+    )
+ui_frame1.place(x=0, y=2, width=450, height=900)
+
+intro_label = Label(
+    ui_frame1, text=intro, width=0, bg=grey
+    , fg=turquoise, font=("Comic Sans MS", 13, "bold")
+    )
 intro_label.place(x=0, y=0)
 
+ripping_status = Label(
+    ui_frame1, text="", width=0, bg=grey,
+    )
+ripping_status.place(x=0, y=120)
 
-ui2_frame = LabelFrame(root, text="Movie Collection", bg="#1e1f1f", font=("Comic Sans MS",18, "bold"), padx=10, pady=10, fg="#e96163")
-ui2_frame.place(x=1025, y=2, width=450, height=900)
-testing_listbox = Listbox(ui2_frame, bg="#1e1f1f", fg="#e96163", width=47, height=20, bd=0, font=("Comic Sans MS", 11))
+transcoding_status = Label(
+    ui_frame1, text="", width=0, bg=grey,
+    )
+transcoding_status.place(x=0, y=155)
+
+completed_status_ = Label(
+    ui_frame1, text="Completed Movies:", width=0, bg=grey,
+    fg=purple, font=("Comic Sans MS", 15, "bold")
+    )
+completed_status_.place(x=0, y=325)
+
+completed_status_instructions = Label(
+    ui_frame1, text=instructions1, width=0, bg=grey,
+    fg=turquoise, font=("Comic Sans MS", 11)
+    )
+completed_status_instructions.place(x=0, y=355)
+
+
+
+
+
+ui_frame2 = LabelFrame(
+    root, text="Movie Collection", bg=grey,
+    font=("Comic Sans MS",18, "bold"), padx=10, pady=10,
+    fg=purple
+    )
+ui_frame2.place(x=1041, y=2, width=450, height=900)
+
+testing_listbox = Listbox(ui_frame2, bg="#1e1f1f", fg="#e96163", width=47, height=20, bd=0, font=("Comic Sans MS", 11))
 testing_listbox.place(x=1, y=404)
 
-testing_select_dir_button = Button(ui2_frame, text="Select Directory", command=movie_collection)
-testing_select_dir_button.place(x=1, y=1)
+testing_select_dir_button = Button(ui_frame2, text=instructions3, command=movie_collection, font=("Comic Sans MS", 13, "bold"), bg="#1e1f1f", fg="#e96163", width=42, height=17)
+testing_select_dir_button.place(x=0, y=402)
 
+transcoded_dir_listbox = Listbox(ui_frame1, bg="#1e1f1f", fg="#e96163", width=47, height=20, bd=0, font=("Comic Sans MS", 11))
+transcoded_dir_listbox.place(x=1, y=404)
 
-ripping_dir_label = Label(ui_frame, text="Preparing...", width=0, bg="#1e1f1f", fg="#e96163", font=("Comic Sans MS",12, "bold"))
-ripping_dir_label.place(x=0, y=300)
-ripping_dir_listbox = Listbox(ui_frame, bg="#1e1f1f", fg="#e96163", width=35, height=1, bd=0, font=("Comic Sans MS", 11))
-ripping_dir_listbox.place(x=110, y=300)
+completed_status_ = Label(
+    ui_frame2, text="Movie Collection:", width=0, bg=grey,
+    fg=purple, font=("Comic Sans MS", 15, "bold")
+    )
+completed_status_.place(x=0, y=325)
 
-ripped_dir_label = Label(ui_frame, text="In the Que", width=0, bg="#1e1f1f", fg="#e96163", font=("Comic Sans MS",12, "bold"))
-ripped_dir_label.place(x=0, y=340)
-ripped_dir_listbox = Listbox(ui_frame, bg="#1e1f1f", fg="#e96163", width=35, height=3, bd=0, font=("Comic Sans MS", 11))
-ripped_dir_listbox.place(x=110, y=322)
-
-transcoding_dir_label = Label(ui_frame, text="Working...", width=0, bg="#1e1f1f", fg="#e96163", font=("Comic Sans MS",12, "bold"))
-transcoding_dir_label.place(x=0, y=380)
-transcoding_dir_listbox = Listbox(ui_frame, bg="#1e1f1f", fg="#e96163", width=35, height=1, bd=0, font=("Comic Sans MS", 11))
-transcoding_dir_listbox.place(x=110, y=382)
-
-transcoded_dir_label = Label(ui_frame, text=completed, width=0, bg="#1e1f1f", fg="#e96163", font=("Comic Sans MS",12, "bold"))
-transcoded_dir_label.place(x=0, y=404)
-transcoded_instructions_label = Label(ui_frame, text=instructions,  bg="#1e1f1f", fg="#e96163", font=("Comic Sans MS",10))
-transcoded_instructions_label.place(x=0, y=544)
-
-transcoded_dir_listbox = Listbox(ui_frame, bg="#1e1f1f", fg="#e96163", width=35, height=20, bd=0, font=("Comic Sans MS", 11))
-transcoded_dir_listbox.place(x=110, y=404)
-
-
+completed_status_instructions = Label(
+    ui_frame2, text=instructions2, width=0, bg=grey,
+    fg=turquoise, font=("Comic Sans MS", 11)
+    )
+completed_status_instructions.place(x=0, y=355)
 
 
 
@@ -200,8 +231,8 @@ class Rip_Scrape_Transcode:
                 print("SECTION 1: Is The Drive Ready?") # !!!!DEBUGGING!!!!
                 disc_title = None # Variable that stores just the disc name is None.
                 print(drive_ready)# !!!!DEBUGGING!!!!
-                self.Movie_Title = disc_title
-                self.Movie_Poster = disc_title
+                self.Movie_Title = None
+                self.Movie_Poster = None
 ########     SECTION 2:
             if disc_title != None: # If disc_title is NOT None then Scrape_Movie_Data from Google.
                 print("SECTION 2: Disc title is: " + disc_title) # !!!!DEBUGGING!!!!
@@ -210,7 +241,7 @@ class Rip_Scrape_Transcode:
                     print(phrase) # !!!!DEBUGGING!!!!
                     search_results = search(phrase, num_results=2, lang="en") # Variable that stores SEARCH results.
                     links_list = [] # Variable that stores the list of links generated from the SEARCH.
-                    print("SECTION 2: Useing GoogleSearch Method") # !!!!DEBUGGING!!!!
+                    print("SECTION 2: Using GoogleSearch Method") # !!!!DEBUGGING!!!!
                     for link in search_results: # For LINK in search_results do the following
                         print(link) # !!!!DEBUGGING!!!!
                         if link.startswith("https://www.imdb.com/title/tt") and link.endswith("/"): # If LINK starts with 'https://www.imdb.com/title/tt' and ends with '/' then continue
@@ -314,7 +345,6 @@ class Rip_Scrape_Transcode:
                 if self.Movie_Title != None:
                     try:
                         makemkv = MakeMKV(0) # Creating an instance of MakeMKV
-                        
                         makemkv.mkv(0, f"{Directories().temp+self.Movie_Title}") # Using MakeMKV top make rip the DVD to the temp directory
                     except Exception:
                         ctypes.windll.WINMM.mciSendStringW(u"set cdaudio door open", None, 0, None) # Open the disc tray
@@ -324,8 +354,8 @@ class Rip_Scrape_Transcode:
                         file_destination = f"{Directories().uncompressed+self.Movie_Title}" # The destination of the files one ripping has completed.
                         shutil.move(file_location, file_destination) # Move the file from the temp directory to the uncompressed directory
                         ctypes.windll.WINMM.mciSendStringW(u"set cdaudio door open", None, 0, None) # Open the disc tray
-                        back_ground.config(image=background)
                         drive_ready = True
+                        back_ground.config(image=background)
                     except IndexError:
                         pass
                 else:
@@ -364,16 +394,15 @@ class Rip_Scrape_Transcode:
                         else:
                             pass
                 threading.Thread(target=transcode).start()
+                ctypes.windll.WINMM.mciSendStringW(u"set cdaudio door open", None, 0, None) # Open the disc tray
+                print(self.Movie_Title+" has finished ripping and is now transcoding.")
+                drive_ready = True
             else:
                 self.Movie_Poster = None #
                 self.Movie_Title = None #
         else:
             self.Movie_Poster = None #
             self.Movie_Title = None #
-
-
-
-
 
 def rip_scrape_transcode():
 
@@ -387,12 +416,6 @@ def rip_scrape_transcode():
             pass
     else:
         pass
-
-def movie_collection():
-    global collection_dir
-    collection_dir = filedialog.askdirectory()
-
-    return collection_dir
 
 def refresh():
     while True:
@@ -421,22 +444,29 @@ def refresh():
             transcoded_dir_listbox.delete(0, END)
             for i in Directories().compressed_list:
                 transcoded_dir_listbox.insert(END, f" {i}")
+        
+        
+        
+        
+        if len(Directories().temp_list) != 0:
+            ripping_status.config(text=f"Ripping : {IMDB_Movie_Title}", fg=pink, font=("Comic Sans MS", 13, "bold"))
+        else:
+            ripping_status.config(text="Waiting for DVD to Rip...", fg=green, font=("Comic Sans MS", 13, "bold"))
 
-        if len(Directories().transcoding_list) != len(transcoding_dir_listbox.get(0, END)):
-            transcoding_dir_listbox.delete(0, END)
-            for i in Directories().transcoding_list:
-                transcoding_dir_listbox.insert(END, f" {i}")
-
-        if len(Directories().temp_list) != len(ripping_dir_listbox.get(0, END)):
-            ripping_dir_listbox.delete(0, END)
-            for i in Directories().temp_list:
-                ripping_dir_listbox.insert(END, f" {i}")
-
-        if len(Directories().uncompressed_list) != len(ripped_dir_listbox.get(0, END)):
-            ripped_dir_listbox.delete(0, END)
-            for i in Directories().uncompressed_list:
-                ripped_dir_listbox.insert(END, f" {i}")
-                
+        if len(Directories().transcoding_list) != 0:
+            transcoding_status.config(text=f"Transcoding : {Directories().transcoding_list[0]}", fg=pink, font=("Comic Sans MS", 13, "bold"))
+        else:
+            transcoding_status.config(text="Waiting for Movie to Transcode...", fg=green, font=("Comic Sans MS", 13, "bold"))
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
         if drive_ready != False:
             rip_scrape_transcode()
             
