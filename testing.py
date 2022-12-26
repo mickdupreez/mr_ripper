@@ -244,5 +244,3 @@ def rip_and_transcode():
         return movie_title
 
     move_and_transcode()
-
-rip_and_transcode()
