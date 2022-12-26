@@ -451,30 +451,34 @@ def rip_and_transcode():
         If the size is larger than 20GB, the directory is moved to the uncompressed directory. If it is smaller, it is moved
         to the compressed directory and is also renamed to match the movie title.
         """
+        # get the output directory and movie title from the rip function
         output_directory, movie_title = rip()
+        # get the size of the output directory in bytes
         output_directory_size = sum(os.path.getsize(os.path.join(output_directory, f)) for f in os.listdir(output_directory))
+        # convert the size to GB
         output_directory_size_gb = output_directory_size / (1024 ** 3)
-        print(output_directory_size_gb)
+        # if the size is greater than 20GB, move the directory to the uncompressed directory
         if output_directory_size_gb > 20:
             file_destination =  f"{Directories().uncompressed}"
-            print("this file needs to be compressed")
-            print(f"the file file destination is {file_destination} and the size is {output_directory_size_gb}")
+        # if the size is less than or equal to 20GB, move the directory to the compressed directory
+        # and rename the file to match the movie title
         else:
             file_destination =  f"{Directories().compressed}"
-            print("this file does not need to be compressed")
-            print(f"the file file destination is {file_destination} and the size is {output_directory_size_gb}")
-            print("The file will need to be renamed")
             for file in os.listdir(f"{Directories().temp}{movie_title}"):
                 if file.endswith('.mkv'):
                     os.rename(f"{Directories().temp}{movie_title}/{file}", f"{Directories().temp}{movie_title}/{movie_title}.mkv")
-
+    
+        # move the output directory to the destination directory
         shutil.move(output_directory, file_destination)
+        # start a new thread to run the transcode function in the background
         threading.Thread(target=transcode).start()
+        # open the CD tray
         ctypes.windll.WINMM.mciSendStringW(u"set cdaudio door open", None, 0, None)
+        # return the movie title
+
         return movie_title
 
     move_and_transcode()
-
 
 
 while True:
