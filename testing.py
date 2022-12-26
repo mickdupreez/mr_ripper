@@ -19,6 +19,22 @@ import time
 import threading
 
 def rip_and_transcode():
+    """
+    This function is responsible for the overall flow of the program. It handles the setup and initialization of necessary
+    variables and objects, and calls the functions that handle the various steps of the process.
+    
+    The steps performed by this function are:
+    1. Initialize the Directories class and set up the necessary directories.
+    2. Get the list of possible movie titles from the movie_titles.txt file.
+    3. Get the volume information and disc information from the CD/DVD drive.
+    4. Use the volume information and disc information to search for the movie title and poster online.
+    5. Rip the CD/DVD using the MakeMKV class.
+    6. Move the output directory to either the uncompressed or compressed directory, depending on the size of the directory.
+       If the size is larger than 20GB, the directory is moved to the uncompressed directory. If it is smaller, it is moved
+       to the compressed directory and is also renamed to match the movie title.
+    7. Start a new thread to transcode the movie.
+    8. Return the movie title.
+    """
     class Directories:
         compressed = "compressed/"
         plex = "plex/"
