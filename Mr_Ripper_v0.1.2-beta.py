@@ -151,7 +151,7 @@ class Directories:
     """
         This class checks that all the directories that are required for the program to run
         exists, if it does not it will create it. 
-        Those directories are then assigned to variables used through out hte program.
+        Those directories are then assigned to variables used through out the program.
         The content of these directories are then placed into lists that are then
         used throughout the program.
 
@@ -250,14 +250,10 @@ class Rip_Scrape_Transcode:
                             if link not in links_list: # If the LINK is NOT in the links_list do the following.
                                 print(link + "Is not in the links list" ) # !!!!DEBUGGING!!!!
                                 links_list.append(link) # Append LINK to links_list.
-                                #print(links_list + "the links in the links_list") # !!!!DEBUGGING!!!!
-                            else:
-                                print(link + "exists! passing") # !!!!DEBUGGING!!!!
-                        else:
-                            print(link + "Wrong FORMAT!") # !!!!DEBUGGING!!!!
-                    
-                    movie_imdb_link = links_list[0] # Variable that stores the IMDB link for the IMDB poster and info scrape.
-                    print(movie_imdb_link + "this is the IMDB link for the movie") # !!!!DEBUGGING!!!!
+                                print(links_list[0]) # !!!!DEBUGGING!!!!
+                                movie_imdb_link = links_list[0] # Variable that stores the IMDB link for the IMDB poster and info scrape.
+                                print(movie_imdb_link) # !!!!DEBUGGING!!!!
+                                return movie_imdb_link
 ########     SECTION 3:
                     ## IMPORTANT NOTE - options.headless set to False to see the browser being scraped.
                     user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36"
@@ -317,7 +313,7 @@ class Rip_Scrape_Transcode:
                     browser.quit() # Quit the browser after scraping completes.
 
                 except Exception:
-                    print("SECTION 4: Web Scraping Has Failed useing IMDB API directly") # !!!!DEBUGGING!!!!
+                    print("SECTION 4: Web Scraping Has Failed using IMDB API directly") # !!!!DEBUGGING!!!!
                     pass
                     if disc_title != None:
                         try:
