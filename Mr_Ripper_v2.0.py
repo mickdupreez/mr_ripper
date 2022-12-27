@@ -96,31 +96,40 @@ def rip_and_transcode():
 
         def get_items():
             """
-            Get the items in the 'movie_titles.txt' file.
-
+            Extract a list of movie titles from the 'movie_titles.txt' file.
+        
+            This function reads the 'movie_titles.txt' file and extracts a list of movie titles from it. The movie titles
+            are assumed to be separated by commas and the file is assumed to be in the UTF-8 encoding. The function removes
+            any characters that are not letters, numbers, or spaces from the movie titles and strips leading and trailing
+            whitespace.
+        
             Returns:
-            - list: A list of the items in the file.
+                list: A list of movie titles. If there is an error reading the file, an empty list is returned.
             """
-            # The file containing the movie titles
-            possible_title = "movie_titles.txt"
-            # Open the file in read mode with the utf-8 encoding
-            with codecs.open(possible_title, 'r', encoding='utf-8') as file:
-                # Read in all the lines of the file
-                lines = file.readlines()
-                # Initialize an empty list to store the items
-                items = []
-                # For each line in the file
-                for line in lines:
-                    # Split the line by the ',' character and store the resulting list in 'line_items'
-                    line_items = line.split(',')
-                    # Add the items in 'line_items' to the 'items' list
-                    items.extend(line_items)
-            # Remove any non-alphanumeric characters (except for whitespace) from the items
-            items = [re.sub(r'[^A-Za-z0-9\s]', '', item) for item in items]
-            # Strip leading and trailing whitespace from the items
-            items = [item.strip() for item in items]
-            # Return the list of items
-            return items
+            try:
+                # Open the 'movie_titles.txt' file in read mode with the 'codecs' module.
+                possible_title = "movie_titles.txt"
+                with codecs.open(possible_title, 'r', encoding='utf-8') as file:
+                    # Read all the lines in the file into a list.
+                    lines = file.readlines()
+                    # Initialize an empty list to store the movie titles.
+                    items = []
+                    # Iterate over each line in the list.
+                    for line in lines:
+                        # Split the line by the comma separator and add the resulting items to the 'items' list.
+                        line_items = line.split(',')
+                        items.extend(line_items)
+                # Remove any characters that are not letters, numbers, or spaces from each item in the 'items' list.
+                items = [re.sub(r'[^A-Za-z0-9\s]', '', item) for item in items]
+                # Strip leading and trailing whitespace from each item in the 'items' list.
+                items = [item.strip() for item in items]
+                # Return the list of movie titles.
+                return items
+            except Exception as e:
+                # If there is an error reading the file, print an error message and return an empty list.
+                print(f"An error occurred while reading the file: {e}")
+                return []
+
 
         def get_cd_drive():
             """

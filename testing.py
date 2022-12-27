@@ -63,54 +63,111 @@ def rip_and_transcode():
             return os.listdir(directory)
 
     def get_items():
-        possible_title = "movie_titles.txt"
-        with codecs.open(possible_title, 'r', encoding='utf-8') as file:
-            lines = file.readlines()
-            items = []
-            for line in lines:
-                line_items = line.split(',')
-                items.extend(line_items)
-        items = [re.sub(r'[^A-Za-z0-9\s]', '', item) for item in items]
-        items = [item.strip() for item in items]
-        return items
+        try:
+            possible_title = "movie_titles.txt"
+            with codecs.open(possible_title, 'r', encoding='utf-8') as file:
+                lines = file.readlines()
+                items = []
+                for line in lines:
+                    line_items = line.split(',')
+                    items.extend(line_items)
+                items = [re.sub(r'[^A-Za-z0-9\s]', '', item) for item in items]
+                items = [item.strip() for item in items]
+                return items
+        except FileNotFoundError:
+            print("The file specified in 'possible_title' was not found.")
+            return []
+        except UnicodeDecodeError:
+            print("There was a problem decoding the file with the specified encoding.")
+            return []
+        except PermissionError:
+            print("The program does not have permission to access the file.")
+            return []
+        except Exception as e:
+            print(f"An error occurred while reading the file: {e}")
+            return []
 
     def get_cd_drive():
-        drives = win32api.GetLogicalDriveStrings()
-        drives = drives.split('\000')[:-1]
-        for drive in drives:
-            if win32file.GetDriveType(drive) == win32file.DRIVE_CDROM:
-                return drive
+        try:
+            drives = win32api.GetLogicalDriveStrings()
+            drives = drives.split('\000')[:-1]
+            for drive in drives:
+                if win32file.GetDriveType(drive) == win32file.DRIVE_CDROM:
+                    return drive
+        except ImportError as e:
+            print(f"An error occurred while importing the win32api or win32file module: {e}")
+            return None
+        except WindowsError as e:
+            print(f"An error occurred while accessing the drive: {e}")
+            return None
+        except Exception as e:
+            print(f"An error occurred while getting the CD/DVD drive: {e}")
+            return None
 
     def preprocess_string(string):
-        string = re.sub(r'\b\d{4}\b', '', string)
-        string = re.sub(r'[^A-Za-z0-9\s]', '', string)
-        string = string.strip().lower()
-        return string
+        try:
+            string = re.sub(r'\b\d{4}\b', '', string)
+            string = re.sub(r'[^A-Za-z0-9\s]', '', string)
+            string = string.strip().lower()
+            return string
+        except TypeError as e:
+            print(f"An error occurred while preprocessing the string: {e}")
+            return None
+        except Exception as e:
+            print(f"An error occurred while preprocessing the string: {e}")
+            return None
 
     def get_volume_information():
-        drive_letter = get_cd_drive()
         try:
-            volume_info = win32api.GetVolumeInformation(drive_letter)
-            volume_info = volume_info[0]
-            volume_info = volume_info.replace("_", " ")
-            volume_info = preprocess_string(volume_info)
-            return volume_info
-
-        except Exception:
-            print("The CD/DVD drive is not ready.")
+            drive_letter = get_cd_drive()
+            if drive_letter != None:
+                volume_info = win32api.GetVolumeInformation(drive_letter)
+                volume_info = volume_info[0]
+                volume_info = volume_info.replace("_", " ")
+                volume_info = preprocess_string(volume_info)
+                return volume_info
+            else:
+                print("An error occurred while accessing the CD/DVD drive")
+                return None
+        except OSError as e:
+            print(f"An error occurred while getting the volume information due to an operating system error: {e}")
+            return None
+        except ValueError as e:
+            print(f"An error occurred while getting the volume information due to an invalid value: {e}")
+            return None
+        except Exception as e:
+            print(f"An error occurred while getting the volume information: {e}")
             return None
 
     def get_disc_information():
-        drive_letter = get_cd_drive()
         try:
-            disc_information = MakeMKV(drive_letter).info()
-            disc_info = disc_information["disc"]["name"]
-            disc_info = disc_info.replace("_", " ")
-            disc_info = preprocess_string(disc_info)
-            return disc_info
-
-        except Exception:
-            print("The CD/DVD drive is not ready.")
+            drive_letter = get_cd_drive()
+            if drive_letter != None:
+                disc_information = MakeMKV(drive_letter).info()
+                disc_info = disc_information["disc"]["name"]
+                disc_info = disc_info.replace("_", " ")
+                disc_info = preprocess_string(disc_info)
+                return disc_info
+            else:
+                print("An error occurred while accessing the CD/DVD drive")
+                return None
+        except ImportError as e:
+            print(f"An error occurred while importing the required module: {e}")
+            return None
+        except OSError as e:
+            print(f"An error occurred while accessing the CD/DVD drive: {e}")
+            return None
+        except TypeError as e:
+            print(f"An error occurred while processing the disc information: {e}")
+            return None
+        except AttributeError as e:
+            print(f"An error occurred while accessing an attribute of the disc information: {e}")
+            return None
+        except KeyError as e:
+            print(f"An error occurred while accessing a key of the disc information: {e}")
+            return None
+        except Exception as e:
+            print(f"An unknown error occurred while getting the disc information: {e}")
             return None
 
     def get_movie_title(
@@ -131,10 +188,17 @@ def rip_and_transcode():
 
         disc_match, disc_percent = get_match(disc_info, items)
         volume_match, volume_percent = get_match(volume_info, items)
-        if disc_percent > volume_percent:
-            return disc_match
+        if disc_percent < 0.55 and volume_percent < 0.55:
+            print("there are no matches")
+            time.sleep(3)
+            return volume_info
         else:
-            return volume_match
+            print(disc_info, disc_percent)
+            print(volume_info, volume_percent)
+            if disc_percent > volume_percent:
+                return disc_match
+            else:
+                return volume_match
 
     def get_movie_links():
         title = get_movie_title()
@@ -260,3 +324,5 @@ def rip_and_transcode():
         return movie_title
 
     move_and_transcode()
+
+rip_and_transcode()
