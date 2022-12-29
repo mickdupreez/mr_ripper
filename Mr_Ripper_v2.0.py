@@ -20,7 +20,10 @@ from selenium.webdriver.common.by import By
 
 def rip_and_transcode():
     """
-    This function is used to rip and transcode DVDs. It consists of several sub-functions that perform various tasks, such as getting the CD drive, preprocessing strings, getting volume and disc information, getting items, and transcoding files.
+    This function is used to rip and transcode DVDs.
+    It consists of several sub-functions that perform various tasks,
+    such as getting the CD drive, preprocessing strings,
+    getting volume and disc information, getting items, and transcoding files.
     """
     class Directories:
         """
