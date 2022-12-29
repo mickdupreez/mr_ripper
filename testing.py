@@ -1,22 +1,22 @@
 import os
 import re
-from googlesearch import search
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-import win32api
-import win32file
-from makemkv import MakeMKV
-import urllib.request
+import time
 import ctypes
 import shutil
-from PIL import Image as Im
 import codecs
 import difflib
+import win32api
 import requests
-from bs4 import BeautifulSoup
-import subprocess
-import time
+import win32file
 import threading
+import subprocess
+import urllib.request
+from makemkv import MakeMKV
+from PIL import Image as Im
+from bs4 import BeautifulSoup
+from selenium import webdriver
+from googlesearch import search
+from selenium.webdriver.common.by import By
 
 def rip_and_transcode():
     """
@@ -48,7 +48,6 @@ def rip_and_transcode():
             self.temp_list = self.get_directory_contents(self.temp)
             self.transcoding_list = self.get_directory_contents(self.transcoding)
             self.uncompressed_list = self.get_directory_contents(self.uncompressed)
-
             self.directories = [
                 self.compressed,
                 self.plex,
@@ -62,31 +61,6 @@ def rip_and_transcode():
                 os.makedirs(directory)
             return os.listdir(directory)
 
-    def get_items():
-        try:
-            possible_title = "movie_titles.txt"
-            with codecs.open(possible_title, 'r', encoding='utf-8') as file:
-                lines = file.readlines()
-                items = []
-                for line in lines:
-                    line_items = line.split(',')
-                    items.extend(line_items)
-                items = [re.sub(r'[^A-Za-z0-9\s]', '', item) for item in items]
-                items = [item.strip() for item in items]
-                return items
-        except FileNotFoundError:
-            print("The file specified in 'possible_title' was not found.")
-            return []
-        except UnicodeDecodeError:
-            print("There was a problem decoding the file with the specified encoding.")
-            return []
-        except PermissionError:
-            print("The program does not have permission to access the file.")
-            return []
-        except Exception as e:
-            print(f"An error occurred while reading the file: {e}")
-            return []
-
     def get_cd_drive():
         try:
             drives = win32api.GetLogicalDriveStrings()
@@ -94,14 +68,8 @@ def rip_and_transcode():
             for drive in drives:
                 if win32file.GetDriveType(drive) == win32file.DRIVE_CDROM:
                     return drive
-        except ImportError as e:
-            print(f"An error occurred while importing the win32api or win32file module: {e}")
-            return None
-        except WindowsError as e:
-            print(f"An error occurred while accessing the drive: {e}")
-            return None
         except Exception as e:
-            print(f"An error occurred while getting the CD/DVD drive: {e}")
+            print(f"An error occurred !!!NO DRIVE DETECTED!!!. Please make sure that you have a DVD drive connected to your PC: {e}")
             return None
 
     def preprocess_string(string):
@@ -110,12 +78,9 @@ def rip_and_transcode():
             string = re.sub(r'[^A-Za-z0-9\s]', '', string)
             string = string.strip().lower()
             return string
-        except TypeError as e:
-            print(f"An error occurred while preprocessing the string: {e}")
-            return None
         except Exception as e:
-            print(f"An error occurred while preprocessing the string: {e}")
-            return None
+            print(f"An error occurred while preprocessing the string :{string}:: {e}")
+            return string
 
     def get_volume_information():
         try:
@@ -127,16 +92,10 @@ def rip_and_transcode():
                 volume_info = preprocess_string(volume_info)
                 return volume_info
             else:
-                print("An error occurred while accessing the CD/DVD drive")
+                print("ERROR, The 'drive_letter' is None. Please connect a DVD Drive to your PC.")
                 return None
-        except OSError as e:
-            print(f"An error occurred while getting the volume information due to an operating system error: {e}")
-            return None
-        except ValueError as e:
-            print(f"An error occurred while getting the volume information due to an invalid value: {e}")
-            return None
         except Exception as e:
-            print(f"An error occurred while getting the volume information: {e}")
+            print(f"An error has occurred, please insert a DVD.: {e}")
             return None
 
     def get_disc_information():
@@ -149,120 +108,152 @@ def rip_and_transcode():
                 disc_info = preprocess_string(disc_info)
                 return disc_info
             else:
-                print("An error occurred while accessing the CD/DVD drive")
+                print("ERROR, The 'drive_letter' is None. Please connect a DVD Drive to your PC.")
                 return None
-        except ImportError as e:
-            print(f"An error occurred while importing the required module: {e}")
-            return None
-        except OSError as e:
-            print(f"An error occurred while accessing the CD/DVD drive: {e}")
-            return None
-        except TypeError as e:
-            print(f"An error occurred while processing the disc information: {e}")
-            return None
-        except AttributeError as e:
-            print(f"An error occurred while accessing an attribute of the disc information: {e}")
-            return None
-        except KeyError as e:
-            print(f"An error occurred while accessing a key of the disc information: {e}")
-            return None
         except Exception as e:
-            print(f"An unknown error occurred while getting the disc information: {e}")
+            print(f"An error has occurred, please insert a DVD.: {e}")
             return None
 
-    def get_movie_title(
-        disc_info = get_disc_information(),
-        volume_info = get_volume_information(),
-        items = get_items()
-        ):
+    def get_items():
+        try:
+            possible_title = "movie_titles.txt"
+            with codecs.open(possible_title, 'r', encoding='utf-8') as file:
+                lines = file.readlines()
+                items = []
+                for line in lines:
+                    line_items = line.split(',')
+                    items.extend(line_items)
+                items = [re.sub(r'[^A-Za-z0-9\s]', '', item) for item in items]
+                items = [item.strip() for item in items]
+                return items
+        except Exception as e:
+            print(f"An error occurred while reading the file: {e}")
+            return None
 
-        def get_match(string, items):
-            match = None
-            max_percent = 0
-            for item in items:
-                percent = difflib.SequenceMatcher(None, string, item).ratio()
-                if percent > max_percent:
-                    max_percent = percent
-                    match = item
-            return match, max_percent
 
-        disc_match, disc_percent = get_match(disc_info, items)
-        volume_match, volume_percent = get_match(volume_info, items)
-        if disc_percent < 0.55 and volume_percent < 0.55:
-            print("there are no matches")
-            time.sleep(3)
-            return volume_info
-        else:
-            print(disc_info, disc_percent)
-            print(volume_info, volume_percent)
-            if disc_percent > volume_percent:
-                return disc_match
+    def get_movie_title():
+        try:
+            disc_info=get_disc_information()
+            volume_info=get_volume_information()
+            items=get_items()
+            
+            def get_match(string, items):
+                match = None
+                max_percent = 0
+                for item in items:
+                    percent = difflib.SequenceMatcher(None, string, item).ratio()
+                    if percent > max_percent:
+                        max_percent = percent
+                        match = item
+                return match, max_percent
+
+            if disc_info is None or volume_info is None or items is None:
+                print("An error occurred while getting disc, volume, or item information")
+                return None
             else:
-                return volume_match
+                disc_match, disc_percent = get_match(disc_info, items)
+                volume_match, volume_percent = get_match(volume_info, items)
+                if disc_percent < 0.55 and volume_percent < 0.55:
+                    print("There are no matches, using the 'volume_info' as the string to search for.")
+                    time.sleep(3)
+                    return volume_info
+                else:
+                    print(disc_info, disc_percent)
+                    print(volume_info, volume_percent)
+                    if disc_percent > volume_percent:
+                        return disc_match
+                    else:
+                        return volume_match
+        except Exception as e:
+            print(f"An unexpected error occurred, using the 'volume_info' as the string to search for. : {e}")
+            return volume_info
 
     def get_movie_links():
-        title = get_movie_title()
-        query = title.replace(" ", "+")
-        url = f"https://www.google.com/search?q={query}+site:imdb.com"
-        headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36"
-        }
-        response = requests.get(url, headers=headers)
-        soup = BeautifulSoup(response.text, "html.parser")
-        links = []
-        for a in soup.find_all("a", href=True):
-            if a["href"].startswith("https://www.imdb.com/title/tt") and re.match(r"\d+/$", a["href"][-6:]):
-                links.append(a["href"])
-        return links[:1]
+        try:
+            title = get_movie_title()
+            if title != None:
+                query = title.replace(" ", "+")
+                url = f"https://www.google.com/search?q={query}+site:imdb.com"
+                headers = {
+                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36"
+                }
+                response = requests.get(url, headers=headers)
+                soup = BeautifulSoup(response.text, "html.parser")
+                links = []
+                for a in soup.find_all("a", href=True):
+                    if a["href"].startswith("https://www.imdb.com/title/tt") and re.match(r"\d+/$", a["href"][-6:]):
+                        links.append(a["href"])
+                        link = links[:1]
+                return link
+            else:
+                print("An error occurred while getting the movie title")
+                return None
+        except Exception as e:
+            print(f"An unexpected error occurred: {e}")
+            return None
 
     def get_movie_data():
-        link = get_movie_links()
-        movie_imdb_link = link[0]
-        user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36"
-        options = webdriver.ChromeOptions()
-        options.headless = True
-        options.add_argument("--silent")
-        options.add_argument(f'user-agent={user_agent}')
-        options.add_argument("--window-size=1920,1080")
-        options.add_argument('--ignore-certificate-errors')
-        options.add_argument('--allow-running-insecure-content')
-        options.add_argument("--disable-extensions")
-        options.add_argument("--proxy-server='direct://'")
-        options.add_argument("--proxy-bypass-list=*")
-        options.add_argument("--start-maximized")
-        options.add_argument('--disable-gpu')
-        options.add_argument('--disable-dev-shm-usage')
-        options.add_argument('--no-sandbox')
-        browser = webdriver.Chrome(executable_path="chromedriver.exe", options=options)
-        browser = webdriver.Chrome(executable_path="chromedriver.exe", options=options)
-        browser.get(movie_imdb_link)
-        movie_title = (browser.title.replace(") - IMDb", "").replace("(","").replace(":", ""))
-        print(movie_title)
-        browser.find_element(By.CLASS_NAME, "ipc-lockup-overlay__screen").click()
-        pattern = re.compile(r'<img src="https://m\.media-amazon\.com/images/.+"')
-        matches = pattern.findall(browser.page_source)
-        matches = str(matches[0]).split(",")
-        matches = matches[0].split('"')
-        for match in matches:
-            if match.startswith("https") and match.endswith("jpg"):
-                poster_link = match
-                urllib.request.urlretrieve(poster_link, "temp.jpg")
-                poster = Im.open("temp.jpg") 
-                poster_hight = 900
-                hight_percent = (poster_hight / float(poster.size[1]))
-                poster_width = int((float(poster.size[0]) * float(hight_percent)))
-                poster = poster.resize((poster_width, poster_hight), Im.Resampling.LANCZOS)
-                movie_poster = poster
-                os.remove("temp.jpg")
-                browser.quit()
-                return movie_title, movie_poster
+        try:
+            link = get_movie_links()
+            if link != None:
+                movie_imdb_link = link[0]
+                user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36"
+                options = webdriver.ChromeOptions()
+                options.headless = True
+                options.add_argument("--silent")
+                options.add_argument(f'user-agent={user_agent}')
+                options.add_argument("--window-size=1920,1080")
+                options.add_argument('--ignore-certificate-errors')
+                options.add_argument('--allow-running-insecure-content')
+                options.add_argument("--disable-extensions")
+                options.add_argument("--proxy-server='direct://'")
+                options.add_argument("--proxy-bypass-list=*")
+                options.add_argument("--start-maximized")
+                options.add_argument('--disable-gpu')
+                options.add_argument('--disable-dev-shm-usage')
+                options.add_argument('--no-sandbox')
+                browser = webdriver.Chrome(executable_path="chromedriver.exe", options=options)
+                browser = webdriver.Chrome(executable_path="chromedriver.exe", options=options)
+                browser.get(movie_imdb_link)
+                movie_title = (browser.title.replace(") - IMDb", "").replace("(","").replace(":", ""))
+                print(movie_title)
+                browser.find_element(By.CLASS_NAME, "ipc-lockup-overlay__screen").click()
+                pattern = re.compile(r'<img src="https://m\.media-amazon\.com/images/.+"')
+                matches = pattern.findall(browser.page_source)
+                matches = str(matches[0]).split(",")
+                matches = matches[0].split('"')
+                for match in matches:
+                    if match.startswith("https") and match.endswith("jpg"):
+                        poster_link = match
+                        urllib.request.urlretrieve(poster_link, "temp.jpg")
+                        poster = Im.open("temp.jpg") 
+                        poster_hight = 900
+                        hight_percent = (poster_hight / float(poster.size[1]))
+                        poster_width = int((float(poster.size[0]) * float(hight_percent)))
+                        poster = poster.resize((poster_width, poster_hight), Im.Resampling.LANCZOS)
+                        movie_poster = poster
+                        os.remove("temp.jpg")
+                        browser.quit()
+                        return movie_title, movie_poster
+            else:
+                print(f"An error occurred while getting the link, try again later")
+                movie_title = get_movie_title()
+                return movie_title, None
+        except Exception as e:
+            print(f"An error occurred while downloading the movie data from the web, try again later : {e}")
+            movie_title = get_movie_title()
+            return movie_title, None
 
     def transcode():
-        time.sleep(5)
-        uncompressed_list = Directories().uncompressed_list
-        if uncompressed_list != []:
+        try:
+            time.sleep(5)
+            uncompressed_list = Directories().uncompressed_list
+            if uncompressed_list == []:
+                raise ValueError("The uncompressed list is empty")
             name = uncompressed_list[0]
             dir_location = f"{Directories().uncompressed}{name}"
+            if not os.path.isdir(dir_location):
+                raise ValueError(f"{dir_location} is not a valid directory")
             dir_destination = f"{Directories().transcoding}"
             shutil.move(dir_location, dir_destination)
             for file in os.listdir(f"{Directories().transcoding}{name}"):
@@ -278,51 +269,85 @@ def rip_and_transcode():
                         output_file
                     ]
                     subprocess.run(command, shell=True)
+                    time.sleep(3)
+                    print(f"{Directories().transcoding}{name}/{file_name}")
+                    print(f"{Directories().transcoding}{name}/{file_name}")
+                    print(f"{Directories().transcoding}{name}/{file_name}")
+                    print(f"{Directories().transcoding}{name}/{file_name}")
+                    print(f"{Directories().transcoding}{name}/{file_name}")
+                    time.sleep(3)
+                    shutil.rmtree(f"{Directories().transcoding}{name}/{file_name}")
+                    shutil.move(f"{Directories().transcoding}{name}", f"{Directories().compressed}")
+                    time.sleep(2)
+                    return None
                 else:
                     pass
-        else:
-            pass
+        except Exception as e:
+            print(f"An error occurred: {e}")
+            return None
 
     def rip():
-        movie_title, movie_poster = get_movie_data()
-        if movie_title == None:
-            print("Error: There is no movie Title.")
-        else:
-            output_directory = f"{Directories().temp}{movie_title}/"
-            os.makedirs(output_directory, exist_ok=True)
-            movie_poster.save(f"{output_directory}/{movie_title}.jpg")
-            try:
-                makemkv = MakeMKV(0)
-                print("starting RIP")
-                makemkv.mkv(0, output_directory)
-                print("Rip finished")
-            except Exception:
-                ctypes.windll.WINMM.mciSendStringW(u"set cdaudio door open", None, 0, None)
-        return output_directory, movie_title
+        try:
+            movie_title, movie_poster = get_movie_data()
+            if movie_title != None:
+                output_directory = f"{Directories().temp}{movie_title}/"
+                os.makedirs(output_directory, exist_ok=True)
+                if movie_poster != None:
+                    movie_poster.save(f"{output_directory}/{movie_title}.jpg")
+                try:
+                    makemkv = MakeMKV(0)
+                    print("starting RIP")
+                    makemkv.mkv(0, output_directory)
+                    print("Rip finished")
+                    return output_directory, movie_title
+                except Exception:
+                    ctypes.windll.WINMM.mciSendStringW(u"set cdaudio door open", None, 0, None)
+                    return None, None
+            else:
+                print("There is no movie Title. You have issues with getting the movie data")
+                return None, None
+        except Exception as e:
+            print(f"There Has been an issue ripping this file, please reinsert the DVD and try again. : {e}")
+            return None, None
 
     def move_and_transcode():
-        output_directory, movie_title = rip()
-        output_directory_size = sum(os.path.getsize(os.path.join(output_directory, f)) for f in os.listdir(output_directory))
-        output_directory_size_gb = output_directory_size / (1024 ** 3)
-        print(output_directory_size_gb)
-        if output_directory_size_gb > 20:
-            file_destination =  f"{Directories().uncompressed}"
-            print("this file needs to be compressed")
-            print(f"the file file destination is {file_destination} and the size is {output_directory_size_gb}")
+        try:
+            output_directory, movie_title = rip()
+            if output_directory != None:
+                output_directory_size = sum(os.path.getsize(os.path.join(output_directory, f)) for f in os.listdir(output_directory))
+                output_directory_size_gb = output_directory_size / (1024 ** 3)
+                print(output_directory_size_gb)
+                if output_directory_size_gb > 20:
+                    file_destination =  f"{Directories().uncompressed}"
+                else:
+                    file_destination =  f"{Directories().compressed}"
+                    for file in os.listdir(f"{Directories().temp}{movie_title}"):
+                        if file.endswith('.mkv'):
+                            os.rename(f"{Directories().temp}{movie_title}/{file}", f"{Directories().temp}{movie_title}/{movie_title}.mkv")
+                        else:
+                            pass
+                shutil.move(output_directory, file_destination)
+                threading.Thread(target=transcode).start()
+                ctypes.windll.WINMM.mciSendStringW(u"set cdaudio door open", None, 0, None)
+                return movie_title
+            else:
+                print("Error, there is no output directory")
+                return None
+        except Exception as e:
+            print("Error While moving and transcoding file. {e}")
+            return None
+        
+    if get_cd_drive() != None:
+        if get_disc_information() is None or get_volume_information() is None:
+            print("Error, Please insert a DVD into the attached DVD drive.")
+            time.sleep(5)
         else:
-            file_destination =  f"{Directories().compressed}"
-            print("this file does not need to be compressed")
-            print(f"the file file destination is {file_destination} and the size is {output_directory_size_gb}")
-            print("The file will need to be renamed")
-            for file in os.listdir(f"{Directories().temp}{movie_title}"):
-                if file.endswith('.mkv'):
-                    os.rename(f"{Directories().temp}{movie_title}/{file}", f"{Directories().temp}{movie_title}/{movie_title}.mkv")
-                    
-        shutil.move(output_directory, file_destination)
-        threading.Thread(target=transcode).start()
-        ctypes.windll.WINMM.mciSendStringW(u"set cdaudio door open", None, 0, None)
-        return movie_title
+            move_and_transcode()
+            print("Error, Please insert a DVD into the attached DVD drive.")
+            time.sleep(5)
+    else:
+        time.sleep(5)
+        print("Error, Please attach a DVD drive")
 
-    move_and_transcode()
-
-rip_and_transcode()
+while True:
+    rip_and_transcode()
