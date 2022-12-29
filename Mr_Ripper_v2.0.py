@@ -1,516 +1,603 @@
 import os
 import re
-from googlesearch import search
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-import win32api
-import win32file
-from makemkv import MakeMKV
-import urllib.request
+import time
 import ctypes
 import shutil
-from PIL import Image as Im
 import codecs
 import difflib
+import win32api
 import requests
-from bs4 import BeautifulSoup
-import subprocess
-import time
+import win32file
 import threading
-
+import subprocess
+import urllib.request
+from makemkv import MakeMKV
+from PIL import Image as Im
+from bs4 import BeautifulSoup
+from selenium import webdriver
+from googlesearch import search
+from selenium.webdriver.common.by import By
 
 def rip_and_transcode():
     """
-    This function is responsible for the overall flow of the program. It handles the setup and initialization of necessary
-    variables and objects, and calls the functions that handle the various steps of the process.
-    
-    The steps performed by this function are:
-    1. Initialize the Directories class and set up the necessary directories.
-    2. Get the list of possible movie titles from the movie_titles.txt file.
-    3. Get the volume information and disc information from the CD/DVD drive.
-    4. Use the volume information and disc information to search for the movie title and poster online.
-    5. Rip the CD/DVD using the MakeMKV class.
-    6. Move the output directory to either the uncompressed or compressed directory, depending on the size of the directory.
-       If the size is larger than 20GB, the directory is moved to the uncompressed directory. If it is smaller, it is moved
-       to the compressed directory and is also renamed to match the movie title.
-    7. Start a new thread to transcode the movie.
-    8. Return the movie title.
+    This function is used to rip and transcode DVDs. It consists of several sub-functions that perform various tasks, such as getting the CD drive, preprocessing strings, getting volume and disc information, getting items, and transcoding files.
     """
-    try:
-        class Directories:
+    class Directories:
+        """
+        Class for managing directories and their contents.
+
+        Attributes:
+            compressed (str): Directory for compressed files.
+            plex (str): Directory for files to be used with Plex media server.
+            temp (str): Directory for temporary files.
+            transcoding (str): Directory for transcoding files.
+            uncompressed (str): Directory for uncompressed files.
+        """
+
+        def __init__(self):
             """
-            A class representing the directories used in the rip_and_transcode function.
-            """
+            Initialize instance variables for each directory and its contents.
 
-            # Constant class variables representing the names of the directories
-            compressed = "compressed/"
-            plex = "plex/"
-            temp = "temp/"
-            transcoding = "transcoding/"
-            uncompressed = "uncompressed/"
-
-            def __init__(self):
-                """
-                Initialize the Directories object.
-
-                Creates the directories if they do not exist, and initializes class variables
-                representing the contents of each directory as a list.
-                """
-                # Get the contents of the 'compressed' directory and store it in the 'compressed_list' class variable
-                self.compressed_list = self.get_directory_contents(self.compressed)
-                # Get the contents of the 'plex' directory and store it in the 'plex_list' class variable
-                self.plex_list = self.get_directory_contents(self.plex)
-                # Get the contents of the 'temp' directory and store it in the 'temp_list' class variable
-                self.temp_list = self.get_directory_contents(self.temp)
-                # Get the contents of the 'transcoding' directory and store it in the 'transcoding_list' class variable
-                self.transcoding_list = self.get_directory_contents(self.transcoding)
-                # Get the contents of the 'uncompressed' directory and store it in the 'uncompressed_list' class variable
-                self.uncompressed_list = self.get_directory_contents(self.uncompressed)
-
-                # A list of all the directories
-                self.directories = [
-                    self.compressed,
-                    self.plex,
-                    self.temp,
-                    self.transcoding,
-                    self.uncompressed
-                ]
-
-            def get_directory_contents(self, directory):
-                """
-                Get the contents of a directory as a list.
-
-                If the directory does not exist, create it.
-
-                Parameters:
-                - directory (str): The name of the directory.
-
-                Returns:
-                - list: A list of the contents of the directory.
-                """
-                # Check if the directory exists. If it does not, create it.
-                if not os.path.exists(directory):
-                    os.makedirs(directory)
-                # Return the contents of the directory as a list
-                return os.listdir(directory)
-
-        def get_items():
-            """
-            Extract a list of movie titles from the 'movie_titles.txt' file.
-        
-            This function reads the 'movie_titles.txt' file and extracts a list of movie titles from it. The movie titles
-            are assumed to be separated by commas and the file is assumed to be in the UTF-8 encoding. The function removes
-            any characters that are not letters, numbers, or spaces from the movie titles and strips leading and trailing
-            whitespace.
-        
-            Returns:
-                list: A list of movie titles. If there is an error reading the file, an empty list is returned.
-            """
-            try:
-                # Open the 'movie_titles.txt' file in read mode with the 'codecs' module.
-                possible_title = "movie_titles.txt"
-                with codecs.open(possible_title, 'r', encoding='utf-8') as file:
-                    # Read all the lines in the file into a list.
-                    lines = file.readlines()
-                    # Initialize an empty list to store the movie titles.
-                    items = []
-                    # Iterate over each line in the list.
-                    for line in lines:
-                        # Split the line by the comma separator and add the resulting items to the 'items' list.
-                        line_items = line.split(',')
-                        items.extend(line_items)
-                # Remove any characters that are not letters, numbers, or spaces from each item in the 'items' list.
-                items = [re.sub(r'[^A-Za-z0-9\s]', '', item) for item in items]
-                # Strip leading and trailing whitespace from each item in the 'items' list.
-                items = [item.strip() for item in items]
-                # Return the list of movie titles.
-                return items
-            except Exception as e:
-                # If there is an error reading the file, print an error message and return an empty list.
-                print(f"An error occurred while reading the file: {e}")
-                return []
-
-
-        def get_cd_drive():
-            """
-            Get the letter of the CD-ROM drive on the system.
+            Args:
+                None
 
             Returns:
-            - str: The letter of the CD-ROM drive.
+                None
             """
-            # Get a list of all the logical drive strings on the system
+            self.compressed_list = self.get_directory_contents(self.compressed)
+            self.plex_list = self.get_directory_contents(self.plex)
+            self.temp_list = self.get_directory_contents(self.temp)
+            self.transcoding_list = self.get_directory_contents(self.transcoding)
+            self.uncompressed_list = self.get_directory_contents(self.uncompressed)
+            # Create a list of all the directory names
+            self.directories = [
+                self.compressed,
+                self.plex,
+                self.temp,
+                self.transcoding,
+                self.uncompressed
+            ]
+
+        def get_directory_contents(self, directory):
+            """
+            Return a list of the contents of the specified directory. If the directory
+            doesn't exist, create it.
+
+            Args:
+                directory (str): The name of the directory to get the contents of.
+
+            Returns:
+                list: A list of the contents of the specified directory.
+            """
+            # If the directory doesn't exist, create it
+            if not os.path.exists(directory):
+                os.makedirs(directory)
+            # Return a list of the contents of the directory
+            return os.listdir(directory)
+
+    def get_cd_drive():
+        """
+        This function tries to find the drive letter of a CD-ROM drive connected to the system.
+        If a CD-ROM drive is found, the drive letter is returned as a string.
+        If no CD-ROM drive is found, the function returns None.
+        """
+        try:
+            # Get a list of all logical drives on the system
             drives = win32api.GetLogicalDriveStrings()
-            # Split the list by the null character and remove the last element (which is an empty string)
+            # Split the list by the null character and remove the last element
             drives = drives.split('\000')[:-1]
-            # For each drive in the list
+            # Iterate through the list of drives
             for drive in drives:
-                # If the drive is a CD-ROM drive
+                # Check if the drive type is a CD-ROM drive
                 if win32file.GetDriveType(drive) == win32file.DRIVE_CDROM:
-                    # Return the drive letter
+                    # If the drive is a CD-ROM drive, return the drive letter
                     return drive
+        except Exception as e:
+            # If an exception is thrown, print an error message and return None
+            print(f"An error occurred !!!NO DRIVE DETECTED!!!. Please make sure that you have a DVD drive connected to your PC: {e}")
+            return None
 
-        def preprocess_string(string):
-            """
-            Preprocess a string by removing any digits and non-alphanumeric characters (except for whitespace),
-            and lowercasing the string.
-
-            Parameters:
-            - string (str): The string to preprocess.
-
-            Returns:
-            - str: The preprocessed string.
-            """
+    def preprocess_string(string):
+        """
+        This function takes a string as input and preprocesses it in the following way:
+        - Removes any 4-digit numbers from the string
+        - Removes any non-alphanumeric characters from the string
+        - Strips leading and trailing whitespace from the string
+        - Converts the string to lowercase
+        The processed string is returned as output.
+        """
+        try:
             # Remove any 4-digit numbers from the string
             string = re.sub(r'\b\d{4}\b', '', string)
-            # Remove any non-alphanumeric characters (except for whitespace) from the string
+            # Remove any non-alphanumeric characters from the string
             string = re.sub(r'[^A-Za-z0-9\s]', '', string)
-            # Strip leading and trailing whitespace from the string and lowercase it
-            string = string.strip().lower()
-            # Return the preprocessed string
+            # Strip leading and trailing whitespace from the string
+            string = string.strip()
+            # Convert the string to lowercase
+            string = string.lower()
+            return string
+        except Exception as e:
+            # If an exception is thrown, print an error message and return the original string
+            print(f"An error occurred while preprocessing the string :{string}:: {e}")
             return string
 
-        def get_volume_information():
-            """
-            Get the volume information of the CD-ROM drive on the system.
-
-            Returns:
-            - str: The volume information of the CD-ROM drive.
-            """
-            # Get the letter of the CD-ROM drive on the system
+    def get_volume_information():
+        """
+        This function tries to get the volume information for a CD-ROM drive connected to the system.
+        The volume information is returned as a string.
+        If no CD-ROM drive is found or an error occurs, the function returns None.
+        """
+        try:
+            # Get the drive letter of a CD-ROM drive
             drive_letter = get_cd_drive()
-            try:
+            if drive_letter != None:
                 # Get the volume information for the CD-ROM drive
                 volume_info = win32api.GetVolumeInformation(drive_letter)
-                # The volume information is a tuple, where the first element is the volume name
+                # Extract the volume label from the volume information tuple
                 volume_info = volume_info[0]
-                # Replace any underscores in the volume name with spaces
+                # Replace underscores with spaces in the volume label
                 volume_info = volume_info.replace("_", " ")
-                # Preprocess the volume name
+                # Preprocess the volume label
                 volume_info = preprocess_string(volume_info)
-                # Return the volume name
                 return volume_info
-
-            except Exception:
-                # If an exception occurs, print a message and return None
-                print("The CD/DVD drive is not ready.")
+            else:
+                # If no CD-ROM drive was found, print an error message and return None
+                print("ERROR, The 'drive_letter' is None. Please connect a DVD Drive to your PC.")
                 return None
+        except Exception as e:
+            # If an exception is thrown, print an error message and return None
+            print(f"An error has occurred, please insert a DVD.: {e}")
+            return None
 
-        def get_disc_information():
-            """
-            Get the disc information of the CD-ROM drive on the system.
-
-            Returns:
-            - str: The disc information of the CD-ROM drive.
-            """
-            # Get the letter of the CD-ROM drive on the system
+    def get_disc_information():
+        """
+        This function tries to get information about a DVD inserted in a CD-ROM drive.
+        The information is returned as a string.
+        If no CD-ROM drive is found or an error occurs, the function returns None.
+        """
+        try:
+            # Get the drive letter of a CD-ROM drive
             drive_letter = get_cd_drive()
-            try:
-                # Get the disc information for the CD-ROM drive
+            if drive_letter != None:
+                # Use the MakeMKV class to get information about the DVD in the CD-ROM drive
                 disc_information = MakeMKV(drive_letter).info()
-                # The disc information is a dictionary, where the 'name' key contains the name of the disc
+                # Extract the disc name from the disc information dictionary
                 disc_info = disc_information["disc"]["name"]
-                # Replace any underscores in the disc name with spaces
+                # Replace underscores with spaces in the disc name
                 disc_info = disc_info.replace("_", " ")
                 # Preprocess the disc name
                 disc_info = preprocess_string(disc_info)
-                # Return the disc name
                 return disc_info
-
-            except Exception:
-                # If an exception occurs, print a message and return None
-                print("The CD/DVD drive is not ready.")
+            else:
+                # If no CD-ROM drive was found, print an error message and return None
+                print("ERROR, The 'drive_letter' is None. Please connect a DVD Drive to your PC.")
                 return None
+        except Exception as e:
+            # If an exception is thrown, print an error message and return None
+            print(f"An error has occurred, please insert a DVD.: {e}")
+            return None
 
+    def get_items():
+        """
+        This function tries to read a list of movie titles from a file called "movie_titles.txt"
+        and returns the list of titles.
+        If an error occurs, the function returns None.
+        """
+        try:
+            # Set the name of the file containing the movie titles
+            possible_title = "movie_titles.txt"
+            # Open the file in read mode with utf-8 encoding
+            with codecs.open(possible_title, 'r', encoding='utf-8') as file:
+                # Read all lines in the file
+                lines = file.readlines()
+                # Initialize an empty list to store the movie titles
+                items = []
+                # Iterate through the lines in the file
+                for line in lines:
+                    # Split the line by the comma character
+                    line_items = line.split(',')
+                    # Add the items from the line to the list of movie titles
+                    items.extend(line_items)
+                # Remove any non-alphanumeric characters from the movie titles
+                items = [re.sub(r'[^A-Za-z0-9\s]', '', item) for item in items]
+                # Strip leading and trailing whitespace from the movie titles
+                items = [item.strip() for item in items]
+                return items
+        except Exception as e:
+            # If an exception is thrown, print an error message and return None
+            print(f"An error occurred while reading the file: {e}")
+            return None
 
-            except Exception:
-                print("The CD/DVD drive is not ready.")
-                return None
+    def get_movie_title():
+        """
+        This function attempts to determine the title of a movie from a DVD.
+        It does this by extracting the disc information and volume information from the DVD,
+        and searching for the best match for these strings in a list of possible movie titles.
+        If the best match for either the disc information or the volume information has a match ratio greater than or equal to 0.55,
+        the function returns the best match as the movie title.
+        If the match ratio for both the disc information and the volume information is less than 0.55,
+        the function prints a message, waits for 3 seconds, and returns the volume information as the movie title.
+        If an unexpected error occurs, the function prints an error message, waits for 3 seconds,
+        and returns the volume information as the movie title.
+        """
 
-        def get_movie_title(
-            disc_info=get_disc_information(),
-            volume_info=get_volume_information(),
-            items=get_items()
-            ):
-            """
-            Get the title of a movie on the CD-ROM drive, by comparing the disc and volume information to a list of possible titles.
+        try:
+            # Get the disc information for the DVD
+            disc_info = get_disc_information()
+            # Get the volume information for the DVD
+            volume_info = get_volume_information()
+            # Get the list of possible movie titles
+            items = get_items()
 
-            Parameters:
-            - disc_info (str): The disc information of the CD-ROM drive.
-            - volume_info (str): The volume information of the CD-ROM drive.
-            - items (list): A list of possible movie titles.
-
-            Returns:
-            - str: The title of the movie.
-            """
             def get_match(string, items):
                 """
-                Get the best matching string from a list of items, based on string similarity.
-
-                Parameters:
-                - string (str): The string to compare to the items.
-                - items (list): The list of items to compare to the string.
-
-                Returns:
-                - tuple: A tuple containing the best matching item and the similarity score.
+                This function takes a string and a list of strings as input and returns the string from the list
+                that has the highest match ratio with the input string. The match ratio is returned as well.
                 """
+                # Initialize variables to store the best match and the highest match ratio
                 match = None
                 max_percent = 0
-                # For each item in the list
+                # Iterate through the strings in the list
                 for item in items:
-                    # Calculate the string similarity between 'string' and 'item'
+                    # Calculate the match ratio between the input string and the current string in the list
                     percent = difflib.SequenceMatcher(None, string, item).ratio()
-                    # If the similarity score is higher than the previous maximum
+                    # If the match ratio is higher than the current highest, update the best match and the highest match ratio
                     if percent > max_percent:
-                        # Update the maximum similarity score and the best matching item
                         max_percent = percent
                         match = item
-                # Return the best matching item and the similarity score
+                # Return the best match and the highest match ratio
                 return match, max_percent
 
-            # Get the best matching item and the similarity score for the disc information
-            disc_match, disc_percent = get_match(disc_info, items)
-            # Get the best matching item and the similarity score for the volume information
-            volume_match, volume_percent = get_match(volume_info, items)
-            # If the disc information has a higher similarity score than the volume information
-            if disc_percent > volume_percent:
-                # Return the best matching item for the disc information
-                return disc_match
+            if disc_info is None or volume_info is None or items is None:
+                # If any of the disc information, volume information, or movie title list is None,
+                # print an error message and return None
+                print("An error occurred while getting disc, volume, or item information")
+                return None
             else:
-                # Return the best matching item for the volume information
-                return volume_match
+                # Get the best match and the highest match ratio for the disc information
+                disc_match, disc_percent = get_match(disc_info, items)
+                # Get the best match and the highest match ratio for the volume information
+                volume_match, volume_percent = get_match(volume_info, items)
+                if disc_percent < 0.55 and volume_percent < 0.55:
+                    # If the match ratio for both the disc information and the volume information is less than 0.55,
+                    # print a message, wait for 3 seconds, and return the volume information as the movie title
+                    print("There are no matches, using the 'volume_info' as the string to search for.")
+                    time.sleep(3)
+                    return volume_info
+                else:
+                    # Print the disc information and the match ratio for the disc information
+                    print(disc_info, disc_percent)
+                    # Print the volume information and the match ratio for the volume information
+                    print(volume_info, volume_percent)
+                    if disc_percent > volume_percent:
+                        # If the match ratio for the disc information is higher than the match ratio for the volume information,
+                        # return the best match for the disc information as the movie title
+                        return disc_match
+                    else:
+                        # If the match ratio for the volume information is higher than the match ratio for the disc information,
+                        # or if they are equal, return the best match for the volume information as the movie title
+                        return volume_match
+        except Exception as e:
+            # If an unexpected error occurs, print an error message, wait for 3 seconds, and return the volume information as the movie title
+            print(f"An unexpected error occurred, using the 'volume_info' as the string to search for. : {e}")
+            return volume_info
 
-        def get_movie_links():
-            """
-            Get the IMDb link(s) for a movie, based on its title.
-
-            Returns:
-            - list: A list of IMDb links for the movie.
-            """
-            # Get the title of the movie
+    def get_movie_links():
+        """
+        This function is used to get a IMDB link for a movie based on its title.
+    
+        Returns:
+            string: This string is the most likely IMDB movie link.
+        """
+        try:
+            # Get the movie title
             title = get_movie_title()
-            # Replace any spaces in the title with plus signs
-            query = title.replace(" ", "+")
-            # Construct a Google search URL for the movie title on IMDb
-            url = f"https://www.google.com/search?q={query}+site:imdb.com"
-            # Set the user agent for the request
-            headers = {
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36"
-            }
-            # Send the request to Google
-            response = requests.get(url, headers=headers)
-            # Parse the response HTML
-            soup = BeautifulSoup(response.text, "html.parser")
-            # Initialize an empty list for the IMDb links
-            links = []
-            # For each link in the HTML
-            for a in soup.find_all("a", href=True):
-                # If the link is an IMDb link for a movie (as indicated by the URL structure and the presence of the "tt" prefix)
-                if a["href"].startswith("https://www.imdb.com/title/tt") and re.match(r"\d+/$", a["href"][-6:]):
-                    # Add the link to the list
-                    links.append(a["href"])
-            # Return the first link in the list
-            return links[:1]
+            if title != None:
+                # Replace spaces in the title with plus signs for the Google search query
+                query = title.replace(" ", "+")
+                # Construct the URL for the Google search
+                url = f"https://www.google.com/search?q={query}+site:imdb.com"
+                # Set the headers for the HTTP request
+                headers = {
+                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36"
+                }
+                # Send the HTTP request
+                response = requests.get(url, headers=headers)
+                # Parse the HTML of the search results page
+                soup = BeautifulSoup(response.text, "html.parser")
+                # Initialize an empty list to store the IMDb links
+                links = []
+                # Find all links on the page
+                for a in soup.find_all("a", href=True):
+                    # Check if the link is an IMDb link for a movie
+                    if a["href"].startswith("https://www.imdb.com/title/tt") and re.match(r"\d+/$", a["href"][-6:]):
+                        # Add the link to the list
+                        links.append(a["href"])
+                        # Get the first link in the list
+                        link = links[:1]
+                # Return the list of IMDb links
+                return link
+            else:
+                # If an unexpected error occurs, print the error message and return None
+                print("An error occurred while getting the movie title")
+                return None
 
-        def get_movie_data():
-            """
-            Get data for a movie from IMDb.
+        except Exception as e:
+            # If an unexpected error occurs, print the error message and return None
+            print(f"An unexpected error occurred: {e}")
+            return None
 
-            Returns:
-            - str: The movie title.
-            - list: A list of image URLs for the movie.
-            """
-            # Get the IMDb link for the movie
+    def get_movie_data():
+        """
+        Retrieves data about a movie, including its title and poster image, from IMDb.
+
+        This function first calls the `get_movie_links()` function to get a list of links to IMDb pages for movies
+        that match the volume or disc information of the DVD in the drive. It then retrieves the first link in the
+        list and uses it to navigate to the IMDb page for the movie using the Chrome browser in headless mode (i.e.,
+        without a GUI).
+
+        Next, the function extracts the title of the movie from the page title and cleans it up by removing certain
+        characters. It then clicks on an element with the class name "ipc-lockup-overlay__screen" and uses a regular
+        expression to find all image tags in the page source. It splits the matches on commas and quotation marks and
+        searches for a URL that ends in ".jpg", which it assumes is the URL for the poster image.
+
+        The function then downloads the poster image and resizes it using the `Lanczos` resampling algorithm from the
+        `PIL` library. It returns the title and poster image as a tuple.
+
+        Returns:
+        tuple: A tuple containing the movie title (str) and poster image (PIL.Image).
+        """
+        try:
+            # Get the movie links from a different function
             link = get_movie_links()
-            # Get the first link in the list (there should only be one)
-            movie_imdb_link = link[0]
-            # Set the user agent for the request
-            user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36"
-            # Set options for the Chrome webdriver
-            options = webdriver.ChromeOptions()
-            # `headless` option is used to run the browser in headless mode
-            options.headless = True
-            # `silent` option is used to prevent the browser from printing logging messages to the consol
-            options.add_argument("--silent")
-            # `user-agent` option is used to specify the user agent string that will be sent to the web server
-            options.add_argument(f'user-agent={user_agent}')
-            # `window-size` option is used to set the size of the browser window
-            options.add_argument("--window-size=1920,1080")
-            # `ignore-certificate-errors` option is used to ignore SSL certificate errors
-            options.add_argument('--ignore-certificate-errors')
-            # `allow-running-insecure-content` option is used to allow the browser to run insecure content
-            options.add_argument('--allow-running-insecure-content')
-            # `disable-extensions` option is used to disable extensions
-            options.add_argument("--disable-extensions")
-            # `proxy-server` option is used to specify a proxy server to use
-            options.add_argument("--proxy-server='direct://'")
-            # `proxy-bypass-list` option is used to specify a list of servers that should be accessed directly, bypassing the proxy
-            options.add_argument("--proxy-bypass-list=*")
-            # `start-maximized` option is used to start the browser maximized
-            options.add_argument("--start-maximized")
-            # `disable-gpu` option is used to disable the GPU in the browser
-            options.add_argument('--disable-gpu')
-            # `disable-dev-shm-usage` option is used to disable the use of /dev/shm
-            options.add_argument('--disable-dev-shm-usage')
-            # `no-sandbox` option is used to disable the sandbox mode in the browser
-            options.add_argument('--no-sandbox')
-            # Create a webdriver instance with the options
-            browser = webdriver.Chrome(executable_path="chromedriver.exe", options=options)
-            # Open the IMDb page for the movie
-            browser.get(movie_imdb_link)
-            # Get the title of the movie from the page title
-            movie_title = (browser.title.replace(") - IMDb", "").replace("(","").replace(":", ""))
-            # Print the movie title
-            print(movie_title)
-            # Click the "play" button on the page to load the images
-            browser.find_element(By.CLASS_NAME, "ipc-lockup-overlay__screen").click()
-            # Use a regular expression to find image URLs in the page source
-            pattern = re.compile(r'<img src="https://m\.media-amazon\.com/images/.+"')
-            # Find all matches in the page source
-            matches = pattern.findall(browser.page_source)
-            # Split the matches into a list
-            matches = str(matches[0]).split(",")
-            # Split the first match into a list of strings
-            matches = matches[0].split('"')
-            # Iterate over the list of matches
-            for match in matches:
-                # If the match starts with 'https' and ends with 'jpg', we found the image link
-                if match.startswith("https") and match.endswith("jpg"):
-                    # Assign the image link to the poster_link variable
-                    poster_link = match
-                    # Download the image from the link and save it to the 'temp.jpg' file
-                    urllib.request.urlretrieve(poster_link, "temp.jpg")
-                    # Open the image file using the PIL library
-                    poster = Im.open("temp.jpg")
-                    # Set the desired height of the poster
-                    poster_hight = 900
-                    # Calculate the percentage of the height relative to the original size of the image
-                    hight_percent = (poster_hight / float(poster.size[1]))
-                    # Calculate the width of the image based on the desired height and the aspect ratio of the original image
-                    poster_width = int((float(poster.size[0]) * float(hight_percent)))
-                    # Resize the image using the LANCZOS resampling method
-                    poster = poster.resize((poster_width, poster_hight), Im.Resampling.LANCZOS)
-                    # Assign the resized image to the movie_poster variable
-                    movie_poster = poster
-                    # Delete the 'temp.jpg' file
-                    os.remove("temp.jpg")
-                    # Quit the browser
-                    browser.quit()
-                    # Return the title and poster of the movie
-                    return movie_title, movie_poster
+            if link != None:
+                # Get the first link in the list of movie links
+                movie_imdb_link = link[0]
+    
+                # Set a user agent string to identify the browser
+                user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36"
+    
+                # Create options for the Chrome browser
+                options = webdriver.ChromeOptions()
+                options.headless = True  # Run the browser in headless mode (without a GUI)
+                options.add_argument("--silent")  # Suppress logging
+                options.add_argument(f'user-agent={user_agent}')  # Set the user agent
+                options.add_argument("--window-size=1920,1080")  # Set the window size
+                options.add_argument('--ignore-certificate-errors')  # Ignore SSL errors
+                options.add_argument('--allow-running-insecure-content')  # Allow running insecure content
+                options.add_argument("--disable-extensions")  # Disable extensions
+                options.add_argument("--proxy-server='direct://'")  # Set the proxy server
+                options.add_argument("--proxy-bypass-list=*")  # Set the proxy bypass list
+                options.add_argument("--start-maximized")  # Start the browser maximized
+                options.add_argument('--disable-gpu')  # Disable GPU acceleration
+                options.add_argument('--disable-dev-shm-usage')  # Disable shared memory
+                options.add_argument('--no-sandbox')  # Disable the sandbox
+    
+                # Create a Chrome browser instance with the specified options
+                browser = webdriver.Chrome(executable_path="chromedriver.exe", options=options)
+                browser = webdriver.Chrome(executable_path="chromedriver.exe", options=options)
+    
+                # Navigate to the IMDb page for the movie
+                browser.get(movie_imdb_link)
+    
+                # Get the title of the page and clean it up
+                movie_title = (browser.title.replace(") - IMDb", "").replace("(","").replace(":", ""))
+                print(movie_title)
+    
+                # Click on an element with the class name "ipc-lockup-overlay__screen"
+                browser.find_element(By.CLASS_NAME, "ipc-lockup-overlay__screen").click()
+    
+                # Use a regular expression to find all image tags in the page source
+                pattern = re.compile(r'<img src="https://m\.media-amazon\.com/images/.+"')
+                matches = pattern.findall(browser.page_source)
+    
+                # Split the matches on commas and then on quotation marks
+                matches = str(matches[0]).split(",")
+                matches = matches[0].split('"')
 
-        def transcode():
-            """
-            Transcodes the first video file in the 'uncompressed' directory using the HandBrakeCLI tool.
-            The video file is first moved from the 'uncompressed' directory to the 'transcoding' directory.
-            Then, the HandBrakeCLI tool is called with the necessary command line arguments to transcode the 
-            video file using the 'PLEX' preset specified in the 'profile.json' file. The transcoded video
-            file is saved in the 'transcoding' directory with the same name as the original video file.
-            """
+                for match in matches:
+                    # If the match is a URL that ends in ".jpg"
+                    if match.startswith("https") and match.endswith("jpg"):
+                        # Set the poster link to the match
+                        poster_link = match
+                        # Download the image at the poster link and save it as "temp.jpg"
+                        urllib.request.urlretrieve(poster_link, "temp.jpg")
+                        # Open the image using the Image library from the PIL library
+                        poster = Im.open("temp.jpg")
+                        # Set the desired height of the poster image
+                        poster_hight = 900
+                        # Calculate the width of the image based on the desired height
+                        hight_percent = (poster_hight / float(poster.size[1]))
+                        poster_width = int((float(poster.size[0]) * float(hight_percent)))
+                        # Resize the image to the desired dimensions using the Lanczos resampling algorithm
+                        poster = poster.resize((poster_width, poster_hight), Im.Resampling.LANCZOS)
+                        # Set the movie poster image to the resized image
+                        movie_poster = poster
+                        # Delete the temporary image file
+                        os.remove("temp.jpg")
+                        # Quit the Chrome browser
+                        browser.quit()
+                        # Return the movie title and poster image
+                        return movie_title, movie_poster
+                else:
+                    # If no valid image URL was found, print an error message
+                    print(f"An error occurred while getting the link, try again later")
+                    # Get the movie title from a different function
+                    movie_title = get_movie_title()
+                    # Return the movie title and a "None" value for the poster image
+                    return movie_title, None
+        # Catch any exceptions that may occur
+        except Exception as e:
+            # Print an error message
+            print(f"An error occurred while downloading the movie data from the web, try again later : {e}")
+            # Get the movie title from a different function
+            movie_title = get_movie_title()
+            # Return the movie title and a "None" value for the poster image
+            return movie_title, None
+
+    def transcode():
+        """
+        Transcodes the first MKV file in the 'uncompressed' directory using HandBrakeCLI, moves it to the 'compressed' directory, and removes the uncompressed version of the file.
+        This function is intended to be called after the DVD has been ripped and stored in the 'uncompressed' directory.
+        """
+        try:
+            # Sleep for 5 seconds to allow for any file system changes to complete before attempting to transcode
             time.sleep(5)
             # Get the list of files in the 'uncompressed' directory
             uncompressed_list = Directories().uncompressed_list
-            # If the 'uncompressed' directory is not empty
-            if uncompressed_list != []:
-                # Get the name of the first file in the 'uncompressed' directory
-                name = uncompressed_list[0]
-                # Create the source and destination paths for the file
-                dir_location = f"{Directories().uncompressed}{name}"
-                dir_destination = f"{Directories().transcoding}"
-                # Move the file from the 'uncompressed' directory to the 'transcoding' directory
-                shutil.move(dir_location, dir_destination)
-                # Iterate through the files in the 'transcoding' directory
-                for file in os.listdir(f"{Directories().transcoding}{name}"):
-                    # If the file is a .mkv file
-                    if file.endswith(".mkv"):
-                        # Set the file name and input/output file paths for the transcode command
-                        file_name = file
-                        input_file = f"{Directories().transcoding}{name}/{file_name}"
-                        output_file = f"{Directories().transcoding}{name}/{name}.mkv"
-                        print(input_file, output_file)
-                        time.sleep(5)
-                        # Create the transcode command using the HandBrakeCLI tool and necessary arguments
-                        command  = [
-                            "HandBrakeCLI.exe", "--preset-import-file", "profile.json", "-Z", "PLEX",
-                            "-i", input_file, "-o",
-                            output_file
-                        ]
-                        # Run the transcode command using the subprocess module
-                        subprocess.run(command, shell=True)
-                        time.sleep(5)
-                        shutil.move(f"{Directories().uncompressed}{name}", f"{Directories().compressed}{name}")
-                        time.sleep(5)
-                    else:
-                        pass
-            else:
-                pass
+            
+            # If the 'uncompressed' list is empty, raise a ValueError
+            if uncompressed_list == []:
+                raise ValueError("The uncompressed list is empty")
+            # Get the name of the first file in the 'uncompressed' directory
+            name = uncompressed_list[0]
+            # Create the file path of the directory containing the first file in the 'uncompressed' directory
+            dir_location = f"{Directories().uncompressed}{name}"
+            
+            # If the directory at 'dir_location' is not a valid directory, raise a ValueError
+            if not os.path.isdir(dir_location):
+                raise ValueError(f"{dir_location} is not a valid directory")
+            # Create the file path of the 'transcoding' directory
+            dir_destination = f"{Directories().transcoding}"
+            # Move the directory containing the first file in the 'uncompressed' directory to the 'transcoding' directory
+            shutil.move(dir_location, dir_destination)
+            
+            # Iterate over the files in the directory containing the first file in the 'uncompressed' directory
+            for file in os.listdir(f"{Directories().transcoding}{name}"):
+                
+                # If the file ends with '.mkv', transcode it using HandBrakeCLI
+                if file.endswith(".mkv"):
+                    # Get the name of the file
+                    file_name = file
+                    # Create the file path of the file to be transcoded
+                    input_file = f"{Directories().transcoding}{name}/{file_name}"
+                    # Create the file path of the transcoded file
+                    output_file = f"{Directories().transcoding}{name}/{name}.mkv"
+                    # Print the file paths of the file to be transcoded and the transcoded file
+                    print(input_file, output_file)
+                    # Sleep for 5 seconds to allow for any file system changes to complete before attempting to transcode
+                    time.sleep(5)
+                    # Create the command to transcode the file using HandBrakeCLI with the 'PLEX' preset and the 'profile.json' file as the import file
+                    command  = [
+                        "HandBrakeCLI.exe", "--preset-import-file", "profile.json", "-Z", "PLEX",
+                        "-i", input_file, "-o",
+                        output_file
+                    ]
+                    # Run the transcode command using the subprocess module
+                    subprocess.run(command, shell=True)
+                    # Move the directory containing the first file in the 'uncompressed' directory to the 'compressed' directory
+                    shutil.move(f"{Directories().transcoding}{name}", f"{Directories().compressed}")
+                    # Sleep for 3 seconds to allow for any file system changes to complete before attempting to delete the uncompressed file
+                    time.sleep(3)
+                    # Create the file path of the uncompressed file
+                    uncompressed_file = f"{Directories().compressed}{name}/{file_name}"
+                    # Delete the uncompressed file
+                    os.remove(uncompressed_file)
+                    # Sleep for 2 seconds to allow for any file system changes to complete before returning
+                    time.sleep(2)
+                    # Return None
+                    return None
+                
+                else:
+                    # If the file does not end with '.mkv', do nothing
+                    pass
+                
+        except Exception as e:
+            # Print an error message if an exception occurs
+            print(f"An error occurred: {e}")
 
-        def rip():
-            """
-            This function rips the movie from the CD/DVD drive and saves it in the 'temp' directory.
-            It also saves the movie poster in the same directory.
-            """
-            # Get the movie title and poster from the get_movie_data function
+            # Return None
+            return None
+
+    def rip():
+        """
+        This function rips a movie from a DVD. It calls the `get_movie_data` function to get the movie title and movie poster.
+        If the movie title is not `None`, the function creates an output directory and saves the movie poster to the output directory.
+        The function then uses the `MakeMKV` library to rip the movie to the output directory.
+        If an error occurs, the CD-ROM tray is opened and `None` is returned for both the output directory and the movie title.
+        """
+        try:
+            # Get the movie title and movie poster from the `get_movie_data` function
             movie_title, movie_poster = get_movie_data()
-            # If the movie title is not found, print an error message
-            if movie_title == None:
-                print("Error: There is no movie Title.")
-            else:
-                # Create the output directory in the 'temp' directory with the movie title as the name
+            if movie_title != None:
+                # Create the output directory and save the movie poster to it
                 output_directory = f"{Directories().temp}{movie_title}/"
-                # Create the directory if it does not exist, if it does exist, do nothing
                 os.makedirs(output_directory, exist_ok=True)
-                # Save the movie poster in the output directory
-                movie_poster.save(f"{output_directory}/{movie_title}.jpg")
+                if movie_poster != None:
+                    movie_poster.save(f"{output_directory}/{movie_title}.jpg")
                 try:
-                    # Create an instance of the MakeMKV class for the CD/DVD drive
+                    # Use the `MakeMKV` library to rip the movie to the output directory
                     makemkv = MakeMKV(0)
                     print("starting RIP")
-                    # Call the mkv method on the MakeMKV instance to rip the movie
                     makemkv.mkv(0, output_directory)
                     print("Rip finished")
+                    return output_directory, movie_title
                 except Exception:
-                    # Open the CD/DVD drive if an exception occurs
+                    # If an error occurs, open the CD-ROM tray
                     ctypes.windll.WINMM.mciSendStringW(u"set cdaudio door open", None, 0, None)
-            # Return the output directory and movie title
-            return output_directory, movie_title
-
-        def move_and_transcode():
-            """
-            Moves the output directory to either the uncompressed or compressed directory, depending on the size of the directory.
-            If the size is larger than 20GB, the directory is moved to the uncompressed directory. If it is smaller, it is moved
-            to the compressed directory and is also renamed to match the movie title.
-            """
-            # get the output directory and movie title from the rip function
-            output_directory, movie_title = rip()
-            # get the size of the output directory in bytes
-            output_directory_size = sum(os.path.getsize(os.path.join(output_directory, f)) for f in os.listdir(output_directory))
-            # convert the size to GB
-            output_directory_size_gb = output_directory_size / (1024 ** 3)
-            # if the size is greater than 20GB, move the directory to the uncompressed directory
-            if output_directory_size_gb > 20:
-                file_destination =  f"{Directories().uncompressed}"
-            # if the size is less than or equal to 20GB, move the directory to the compressed directory
-            # and rename the file to match the movie title
+                    return None, None
             else:
-                file_destination =  f"{Directories().compressed}"
-                for file in os.listdir(f"{Directories().temp}{movie_title}"):
-                    if file.endswith('.mkv'):
-                        os.rename(f"{Directories().temp}{movie_title}/{file}", f"{Directories().temp}{movie_title}/{movie_title}.mkv")
+                print("There is no movie Title. You have issues with getting the movie data")
+                return None, None
+        except Exception as e:
+            print(f"There Has been an issue ripping this file, please reinsert the DVD and try again. : {e}")
+            return None, None
 
-            # move the output directory to the destination directory
-            shutil.move(output_directory, file_destination)
-            # start a new thread to run the transcode function in the background
-            threading.Thread(target=transcode).start()
-            # open the CD tray
-            ctypes.windll.WINMM.mciSendStringW(u"set cdaudio door open", None, 0, None)
-            # return the movie title
+    def move_and_transcode():
+        """
+        This function moves and transcodes a movie file. It first calls the `rip` function to rip the movie and get the output directory and movie title.
+        If the output directory is not `None`, the function checks the size of the output directory in GB. If the size is greater than 20 GB, the movie is moved to the `uncompressed` directory.
+        Otherwise, the movie is moved to the `compressed` directory and the thread `transcode` is started.
+        Finally, the CD-ROM tray is opened and the movie title is returned.
+        If an error occurs, an error message is printed and `None` is returned.
+        """
+        try:
+            # Call the `rip` function to rip the movie and get the output directory and movie title
+            output_directory, movie_title = rip()
+            if output_directory != None:
+                # Calculate the size of the output directory in GB
+                output_directory_size = sum(os.path.getsize(os.path.join(output_directory, f)) for f in os.listdir(output_directory))
+                output_directory_size_gb = output_directory_size / (1024 ** 3)
+                print(output_directory_size_gb)
+                if output_directory_size_gb > 20:
+                    # If the size is greater than 20 GB, move the movie to the `uncompressed` directory
+                    file_destination =  f"{Directories().uncompressed}"
+                else:
+                    # Otherwise, move the movie to the `compressed` directory
+                    file_destination =  f"{Directories().compressed}"
+                    # Rename the movie file to have the movie title
+                    for file in os.listdir(f"{Directories().temp}{movie_title}"):
+                        if file.endswith('.mkv'):
+                            os.rename(f"{Directories().temp}{movie_title}/{file}", f"{Directories().temp}{movie_title}/{movie_title}.mkv")
+                        else:
+                            pass
+                # Move the output directory to the `file_destination`
+                shutil.move(output_directory, file_destination)
+                # Start the `transcode` thread
+                threading.Thread(target=transcode).start()
+                # Open the CD-ROM tray
+                ctypes.windll.WINMM.mciSendStringW(u"set cdaudio door open", None, 0, None)
+                return movie_title
+            else:
+                print("Error, there is no output directory")
+                return None
+        except Exception as e:
+            print("Error While moving and transcoding file. {e}")
+            return None
 
-            return movie_title
-
-        move_and_transcode()
-    except Exception:
+    # Attempt to get the letter of the DVD drive using the get_cd_drive function
+    if get_cd_drive() != None:
+        # If the get_disc_information function or the get_volume_information function returns None, print an error message and sleep for 5 seconds
+        if get_disc_information() is None or get_volume_information() is None:
+            print("Error, Please insert a DVD into the attached DVD drive.")
+            time.sleep(5)
+        # If both the get_disc_information and get_volume_information functions return a value, call the move_and_transcode function
+        else:
+            move_and_transcode
+    # If the get_cd_drive function returns None, print an error message and sleep for 5 seconds
+    else:
+        print("Error, Please attach a DVD drive")
         time.sleep(5)
-        pass
 
 
 while True:
