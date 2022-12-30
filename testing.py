@@ -18,6 +18,11 @@ from selenium import webdriver
 from googlesearch import search
 from selenium.webdriver.common.by import By
 
+
+
+
+
+
 def rip_and_transcode():
     """
     This function is used to rip and transcode DVDs.
@@ -601,7 +606,6 @@ def rip_and_transcode():
     else:
         print("Error, Please attach a DVD drive")
         time.sleep(5)
-
 
 while True:
     rip_and_transcode()

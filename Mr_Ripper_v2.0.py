@@ -25,58 +25,43 @@ def rip_and_transcode():
     such as getting the CD drive, preprocessing strings,
     getting volume and disc information, getting items, and transcoding files.
     """
+
     class Directories:
         """
-        Class for managing directories and their contents.
-
-        Attributes:
-            compressed (str): Directory for compressed files.
-            plex (str): Directory for files to be used with Plex media server.
-            temp (str): Directory for temporary files.
-            transcoding (str): Directory for transcoding files.
-            uncompressed (str): Directory for uncompressed files.
+            This class checks that all the directories that are required for the program to run
+            exists, if it does not it will create it. 
+            Those directories are then assigned to variables used through out the program.
+            The content of these directories are then placed into lists that are then
+            used throughout the program.
+    
         """
-
+        
         def __init__(self):
             """
-            Initialize instance variables for each directory and its contents.
-
-            Args:
-                None
-
-            Returns:
-                None
+                This is a method that gets called each time the Directories class is initialized
             """
-            self.compressed_list = self.get_directory_contents(self.compressed)
-            self.plex_list = self.get_directory_contents(self.plex)
-            self.temp_list = self.get_directory_contents(self.temp)
-            self.transcoding_list = self.get_directory_contents(self.transcoding)
-            self.uncompressed_list = self.get_directory_contents(self.uncompressed)
-            # Create a list of all the directory names
-            self.directories = [
-                self.compressed,
-                self.plex,
-                self.temp,
-                self.transcoding,
-                self.uncompressed
+            self.compressed = "compressed/" # The directory where the compressed files go.
+            self.plex = "plex/" # The directory where the files go that are ready to be moved uploaded.
+            self.temp = "temp/" # The directory where the file gets ripped to.
+            self.transcoding = "transcoding/" # The directory where the files get transcoded.
+            self.uncompressed = "uncompressed/" # The directory where the files wait to be transcoded.
+            self.compressed_list = os.listdir(self.compressed) # A list of items in the compressed directory
+            self.plex_list = os.listdir(self.plex) # A list of items in the plex directory
+            self.temp_list = os.listdir(self.temp) # A list of items in the temp directory
+            self.transcoding_list = os.listdir(self.transcoding) # A list of items in the transcoding directory
+            self.uncompressed_list = os.listdir(self.uncompressed) # A list of items in the uncompressed directory
+            self.directories = [ # A list of all the directories variables above that is used throughout the program
+                self.compressed, # The compressed directory
+                self.plex, # The plex directory
+                self.temp, # The temp directory
+                self.transcoding, # The transcoding directory
+                self.uncompressed # The uncompressed directory
             ]
-
-        def get_directory_contents(self, directory):
-            """
-            Return a list of the contents of the specified directory. If the directory
-            doesn't exist, create it.
-
-            Args:
-                directory (str): The name of the directory to get the contents of.
-
-            Returns:
-                list: A list of the contents of the specified directory.
-            """
-            # If the directory doesn't exist, create it
-            if not os.path.exists(directory):
-                os.makedirs(directory)
-            # Return a list of the contents of the directory
-            return os.listdir(directory)
+            for directory in self.directories: # For each directory in the directories list
+                if os.path.isdir(directory) != True: # If directory does not exist
+                    os.mkdir(directory) # Create directory
+                else: # Skip if directory exists
+                    pass
 
     def get_cd_drive():
         """
@@ -135,13 +120,17 @@ def rip_and_transcode():
             drive_letter = get_cd_drive()
             if drive_letter != None:
                 # Get the volume information for the CD-ROM drive
+                print("Getting volume information")
                 volume_info = win32api.GetVolumeInformation(drive_letter)
+                
                 # Extract the volume label from the volume information tuple
                 volume_info = volume_info[0]
                 # Replace underscores with spaces in the volume label
                 volume_info = volume_info.replace("_", " ")
+                
                 # Preprocess the volume label
                 volume_info = preprocess_string(volume_info)
+                print(volume_info)
                 return volume_info
             else:
                 # If no CD-ROM drive was found, print an error message and return None
@@ -163,13 +152,16 @@ def rip_and_transcode():
             drive_letter = get_cd_drive()
             if drive_letter != None:
                 # Use the MakeMKV class to get information about the DVD in the CD-ROM drive
+                print("Getting disc information")
                 disc_information = MakeMKV(drive_letter).info()
                 # Extract the disc name from the disc information dictionary
                 disc_info = disc_information["disc"]["name"]
+                
                 # Replace underscores with spaces in the disc name
                 disc_info = disc_info.replace("_", " ")
                 # Preprocess the disc name
                 disc_info = preprocess_string(disc_info)
+                print(disc_info)
                 return disc_info
             else:
                 # If no CD-ROM drive was found, print an error message and return None
@@ -596,7 +588,7 @@ def rip_and_transcode():
             time.sleep(5)
         # If both the get_disc_information and get_volume_information functions return a value, call the move_and_transcode function
         else:
-            move_and_transcode
+            move_and_transcode()
     # If the get_cd_drive function returns None, print an error message and sleep for 5 seconds
     else:
         print("Error, Please attach a DVD drive")
