@@ -116,69 +116,169 @@ Check out the github for Documentation"""
 
 
 # Left UI elements
+
+# Create a label frame for the left UI elements
 ui_frame_left = LabelFrame(
-    root, text="Mr Ripper.v0.2.0-beta 1",
-    bg=background1, font=("Comic Sans MS",18, "bold"),
-    padx=10, pady=10, fg=green)
+    root, 
+    text="Mr Ripper.v0.2.0-beta 1",  # Title for the label frame
+    bg=background1,  # Background color
+    font=("Comic Sans MS",18, "bold"),  # Font and size for the title
+    padx=10, pady=10,  # Padding for the label frame
+    fg=green  # Color of the title text
+)
+# Place the label frame on the root window at the specified coordinates
 ui_frame_left.place(x=0, y=2, width=450, height=900)
 
+# Create a label for the default background image
 back_ground_img = Label(image=default_background)
+
+# Place the background image label on the root window at the specified coordinates
 back_ground_img.place(x=447, y=0)
 
+
+# Create a label for the intro text
 intro_label = Label(
-    ui_frame_left, text=intro, width=0, bg=background1,
-    fg=cyan, font=("Comic Sans MS", 13, "bold"))
+    ui_frame_left, 
+    text=intro,  # Text for the label
+    width=0,  # Width of the label
+    bg=background1,  # Background color of the label
+    fg=cyan,  # Color of the text
+    font=("Comic Sans MS", 13, "bold")  # Font and size of the text
+)
+
+# Place the intro label on the left UI frame at the specified coordinates
 intro_label.place(x=0, y=0)
 
+
+# Create a label for the ripping status
 ripping_status = Label(
-    ui_frame_left, text="Please insert a DVD.", width=0,
-    bg=background1, fg=green, font=("Comic Sans MS", 15, "bold"))
+    ui_frame_left, 
+    text="Please insert a DVD.",  # Text for the label
+    width=0,  # Width of the label
+    bg=background1,  # Background color of the label
+    fg=green,  # Color of the text
+    font=("Comic Sans MS", 15, "bold")  # Font and size of the text
+)
+
+# Place the ripping status label on the left UI frame at the specified coordinates
 ripping_status.place(x=0, y=120)
 
+
+# Create a label for the transcoding status
 transcoding_status = Label(
-    ui_frame_left, text="Waiting for a Movie to transcode.", width=0,
-    bg=background1, fg=green, font=("Comic Sans MS", 15, "bold"))
+    ui_frame_left, 
+    text="Waiting for a Movie to transcode.",  # Text for the label
+    width=0,  # Width of the label
+    bg=background1,  # Background color of the label
+    fg=green,  # Color of the text
+    font=("Comic Sans MS", 15, "bold")  # Font and size of the text
+)
+
+# Place the transcoding status label on the left UI frame at the specified coordinates
 transcoding_status.place(x=0, y=155)
 
+
+# Create a label for the completed movies status
 completed_status = Label(
-    ui_frame_left, text="Completed Movies:", width=0, bg=background1,
-    fg=purple, font=("Comic Sans MS", 15, "bold"))
+    ui_frame_left, 
+    text="Completed Movies:",  # Text for the label
+    width=0,  # Width of the label
+    bg=background1,  # Background color of the label
+    fg=purple,  # Color of the text
+    font=("Comic Sans MS", 15, "bold")  # Font and size of the text
+)
+
+# Place the completed movies status label on the left UI frame at the specified coordinates
 completed_status.place(x=0, y=345)
 
+# Create a label for the completed movies status instructions
 completed_status_instructions = Label(
-    ui_frame_left, text=instructions1, width=0, bg=background1,
-    fg=cyan, font=("Comic Sans MS", 11, "bold"))
+    ui_frame_left, 
+    text=instructions1,  # Text for the label
+    width=0,  # Width of the label
+    bg=background1,  # Background color of the label
+    fg=cyan,  # Color of the text
+    font=("Comic Sans MS", 11, "bold")  # Font and size of the text
+)
+
+# Place the completed movies status instructions label on the left UI frame at the specified coordinates
 completed_status_instructions.place(x=0, y=375)
 
+# Create a listbox for the temp directory
 ripping_listbox = Listbox(ui_frame_left)
 
+# Create a listbox for the transcoding directory
 transcoding_dir_listbox = Listbox(
-    ui_frame_left, bg=background2, fg=orange, width=47,
-    height=6, bd=0, font=("Comic Sans MS", 11, "bold"))
+    ui_frame_left, 
+    bg=background2,  # Background color of the listbox
+    fg=orange,  # Color of the text in the listbox
+    width=47,  # Width of the listbox
+    height=6,  # Height of the listbox
+    bd=0,  # Border size of the listbox
+    font=("Comic Sans MS", 11, "bold")  # Font and size of the text in the listbox
+)
+
+# Place the transcoding directory listbox on the left UI frame at the specified coordinates
 transcoding_dir_listbox.place(x=1, y=204)
 
 
+
+# Create a listbox for the compressed directory
 compressed_dir_listbox = Listbox(
-    ui_frame_left, bg=background2, fg=purple, width=47,
-    height=18, bd=0, font=("Comic Sans MS", 11, "bold"))
+    ui_frame_left, 
+    bg=background2,  # Background color of the listbox
+    fg=purple,  # Color of the text in the listbox
+    width=47,  # Width of the listbox
+    height=18,  # Height of the listbox
+    bd=0,  # Border size of the listbox
+    font=("Comic Sans MS", 11, "bold")  # Font and size of the text in the listbox
+)
+
+# Place the compressed directory listbox on the left UI frame at the specified coordinates
 compressed_dir_listbox.place(x=1, y=444)
 
 # Right ui frame
+# Create a label frame for the right UI elements
 ui_frame_right = LabelFrame(
-    root, text="https://github.com/mickdupreez/mr_ripper",
-    bg=background1, font=("Comic Sans MS", 16, "bold"),
-    padx=10, pady=10, fg=yellow)
+    root, 
+    text="https://github.com/mickdupreez/mr_ripper",  # Text displayed on the label frame
+    bg=background1,  # Background color of the label frame
+    font=("Comic Sans MS", 16, "bold"),  # Font and size of the text on the label frame
+    padx=10, pady=10,  # Padding around the text on the label frame
+    fg=yellow  # Color of the text on the label frame
+)
+
+# Place the right UI frame at the specified coordinates on the root window
 ui_frame_right.place(x=1041, y=2, width=450, height=900)
 
+
+# Create a label to display text on the right UI frame
 movie_collection_label1 = Label(
-    ui_frame_right, text="Movie Collection:", bg=background1,
-    fg=green, width=0, font=("Comic Sans MS", 15, "bold"))
+    ui_frame_right, 
+    text="Movie Collection:",  # Text displayed on the label
+    bg=background1,  # Background color of the label
+    fg=green,  # Color of the text on the label
+    width=0,  # Width of the label
+    font=("Comic Sans MS", 15, "bold")  # Font and size of the text on the label
+)
+
+# Place the label at the specified coordinates on the right UI frame
 movie_collection_label1.place(x=0, y=345)
 
+
+# Create a label to display text on the right UI frame
 movie_collection_label2 = Label(
-    ui_frame_right, text=instructions2, width=0, bg=background1,
-    fg=pink, font=("Comic Sans MS", 11, "bold"))
+    ui_frame_right, 
+    text=instructions2,  # Text displayed on the label
+    width=0,  # Width of the label
+    bg=background1,  # Background color of the label
+    fg=pink,  # Color of the text on the label
+    font=("Comic Sans MS", 11, "bold")  # Font and size of the text on the label
+)
+
+# Place the label at the specified coordinates on the right UI frame
 movie_collection_label2.place(x=0, y=375)
+
 
 uncompressed_label = Label(
     ui_frame_right, text=que_text1, width=0, bg=background1,
