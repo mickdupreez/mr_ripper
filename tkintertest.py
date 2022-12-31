@@ -33,7 +33,6 @@ class Directories:
         used throughout the program.
 
     """
-    
     def __init__(self):
         """
             This is a method that gets called each time the Directories class is initialized
@@ -60,8 +59,6 @@ class Directories:
                 os.mkdir(directory) # Create directory
             else: # Skip if directory exists
                 pass
-
-
 
 root = Tk()
 root.title("Mr Ripper")
@@ -108,11 +105,7 @@ info_label = """This program is in beta, there are still
 some bugs that need to ironed out.
 Check out the github for Documentation"""
 
-
-
-
-
-# Left UI elements
+# LEFT SIDE OF THE UI
 # Create a label frame for the left UI elements
 ui_frame_left = LabelFrame(
     root, 
@@ -209,8 +202,7 @@ compressed_dir_listbox = Listbox(
 )
 # Place the compressed directory listbox on the left UI frame at the specified coordinates
 compressed_dir_listbox.place(x=1, y=444)
-
-# Right ui frame
+# RIGHT SIDE OF THE UI
 # Create a label frame for the right UI elements
 ui_frame_right = LabelFrame(
     root, 
@@ -291,59 +283,91 @@ uncompressed_listbox = Listbox(
 # Place the uncompressed_listbox at the specified coordinates on the right UI frame
 uncompressed_listbox.place(x=1, y=204)
 
-
 def refresh():
+    """
+    This function refreshes the GUI to show the latest status of the directories and the movies in them.
+    It continuously loops, with a delay of 1 second between each iteration, to check if the number of items in the directories
+    has changed. If the number of items has changed, it updates the corresponding listbox and label with the new items.
+    If the temp directory is not empty, it also updates the status text and background image. If the temp directory is empty,
+    it sets the background image to the default image and updates the status text. If the transcoding directory is not empty,
+    it updates the status text. If the transcoding directory is empty, it updates the status text. If the uncompressed
+    directory is not empty, it updates the label text and color. If the uncompressed directory is empty, it updates the
+    label text and color. If the compressed directory is not empty, it updates the compressed listbox. If the plex
+    directory is not empty, it updates the plex listbox.
+    """
     while True:
-        time.sleep(1)
+        time.sleep(1)  # Delay the execution of the loop for 1 second.
+        # Check if the number of items in the temp directory is different from the number of items in the ripping listbox.
         if len(Directories().temp_list) != len(ripping_listbox.get(0, END)):
+            # If they are different, delete all items in the ripping listbox.
             ripping_listbox.delete(0, END)
+            # If the temp directory is not empty, update the status text and background image.
             if Directories().temp_list != []:
                 temp = Directories().temp_list
                 file_being_ripped = temp[0]
                 ripping_status.config(text=f"Ripping: {file_being_ripped}", fg=red)
                 try:
+                    # Find the poster image in the temp directory and convert it to a PNG image.
                     for file in os.listdir(f"{Directories().temp}{file_being_ripped}"):
                         if file.endswith(".jpg"):
                             poster_jpg = f"{Directories().temp}{file_being_ripped}/{file_being_ripped}.jpg"
                     with Image.open(poster_jpg) as ima:
                         poster_png =f"{Directories().temp}{file_being_ripped}/{file_being_ripped}.png"
                         ima.save(poster_png)
+                        # Update the background image with the poster image.
                         poster = PhotoImage(file=poster_png)
                         back_ground_img.config(image=poster)
                 except Exception:
+                    # If an error occurs, ignore it and continue.
                     pass
+                # Insert all items in the temp directory into the ripping listbox.
                 for i in Directories().temp_list:
                     ripping_listbox.insert(END, f" {i}")
+            # If the temp directory is empty, update the status text and set the background image to the default image.
             if len(Directories().temp_list) == 0:
                     back_ground_img.config(image=default_background)
                     ripping_status.config(text="Please insert a DVD.", fg=green)
-                    
+        # Check if the number of items in the transcoding directory is different from the number of items in the transcoding listbox.
         if len(Directories().transcoding_list) != len(transcoding_dir_listbox.get(0, END)):
+            # If they are different, delete all items in the transcoding listbox.
             transcoding_dir_listbox.delete(0, END)
+            # Update the status text.
             transcoding_status.config(text=f"Transcoding Movies: See list below", fg=red)
+            # Insert all items in the transcoding directory into the transcoding listbox.
             for i in Directories().transcoding_list:
                 transcoding_dir_listbox.insert(END, f" {i}")
-        if len(Directories().transcoding_list) == 0:
-            transcoding_status.config(text="Waiting for a Movie to transcode.", fg=green)
-
+            # If the transcoding directory is empty, update the status text.
+            if len(Directories().transcoding_list) == 0:
+                transcoding_status.config(text="Waiting for a Movie to transcode.", fg=green)
+        # Check if the number of items in the uncompressed directory is different from the number of items in the uncompressed listbox.
         if len(Directories().uncompressed_list) != len(uncompressed_listbox.get(0, END)):
+            # If they are different, delete all items in the uncompressed listbox.
             uncompressed_listbox.delete(0, END)
+            # Insert all items in the uncompressed directory into the uncompressed listbox.
             for i in Directories().uncompressed_list:
                 uncompressed_listbox.insert(END, f" {i}")
+            # Update the label text and color.
             uncompressed_label.configure(text=que_text2, fg=red)
+            # If the uncompressed directory is empty, update the label text and color.
             if len(Directories().uncompressed_list) == 0:
                 uncompressed_label.configure(text=que_text1, fg=green)
-                
+        # Check if the number of items in the compressed directory is different from the number of items in the compressed listbox.
         if len(Directories().compressed_list) != len(compressed_dir_listbox.get(0, END)):
+            # If they are different, delete all items in the compressed listbox.
             compressed_dir_listbox.delete(0, END)
+            # Insert all items in the compressed directory into the compressed listbox.
             for i in Directories().compressed_list:
                 compressed_dir_listbox.insert(END, f" {i}")
-        
+        # Check if the number of items in the plex directory is different from the number of items in the plex listbox.
         if len(Directories().plex_list) != len(plex_listbox.get(0, END)):
+            # If they are different, delete all items in the plex listbox.
             plex_listbox.delete(0, END)
+            # Insert all items in the plex directory into the plex listbox.
             for i in Directories().plex_list:
                 plex_listbox.insert(END, f" {i}")
+        # Wait 1 second before running the loop again.
         time.sleep(1)
 
 threading.Thread(target=refresh).start()
+
 root.mainloop()
