@@ -594,6 +594,3 @@ def rip_and_transcode():
         print("Error, Please attach a DVD drive")
         time.sleep(5)
 
-
-while True:
-    rip_and_transcode()
