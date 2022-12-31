@@ -659,7 +659,7 @@ Check out the github for Documentation"""
 # Create a label frame for the left UI elements
 ui_frame_left = LabelFrame(
     root, 
-    text="Mr Ripper.v0.2.0-beta 1",  # Title for the label frame
+    text="Mr Ripper.v2.0.0-beta 1",  # Title for the label frame
     bg=background1,  # Background color
     font=("Comic Sans MS",18, "bold"),  # Font and size for the title
     padx=10, pady=10,  # Padding for the label frame
