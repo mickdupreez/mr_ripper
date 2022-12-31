@@ -57,7 +57,7 @@ intro = """     Welcome to Mr Ripper's Movie Ripper.
     add it to your media collection.
     
 """
-instructions1 = """This list below contains successfully transcoded movies.
+instructions1 = """This list below contains successfully ripped and or transcoded movies.
 Once verified, the file will br moved to your collection."""
 
 instructions2 = """This list below contains all the movies in your collection.
@@ -97,7 +97,7 @@ ripping_status = Label(
 ripping_status.place(x=0, y=120)
 
 transcoding_status = Label(
-    ui_frame1, text="", width=0, bg=grey,
+    ui_frame1, text="!!!testing!!!", width=0, bg=grey,
     )
 transcoding_status.place(x=0, y=155)
 
@@ -112,8 +112,6 @@ completed_status_instructions = Label(
     fg=turquoise, font=("Comic Sans MS", 11)
     )
 completed_status_instructions.place(x=0, y=355)
-
-
 
 
 
@@ -443,6 +441,8 @@ def refresh():
             transcoded_dir_listbox.delete(0, END)
             for i in Directories().compressed_list:
                 transcoded_dir_listbox.insert(END, f" {i}")
+    
+
         
         
         
@@ -456,24 +456,6 @@ def refresh():
             transcoding_status.config(text=f"Transcoding : {Directories().transcoding_list[0]}", fg=pink, font=("Comic Sans MS", 13, "bold"))
         else:
             transcoding_status.config(text="Waiting for Movie to Transcode...", fg=green, font=("Comic Sans MS", 13, "bold"))
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        if drive_ready != False:
-            rip_scrape_transcode()
-            
-        else:
-            time.sleep(2)
-        time.sleep(.8) # Wait .8 seconds before continuing.
-
-
 
 
 threading.Thread(target=refresh).start()
