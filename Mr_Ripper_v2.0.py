@@ -33,9 +33,9 @@ def rip_and_transcode():
             Those directories are then assigned to variables used through out the program.
             The content of these directories are then placed into lists that are then
             used throughout the program.
-    
+
         """
-        
+
         def __init__(self):
             """
                 This is a method that gets called each time the Directories class is initialized
@@ -354,7 +354,7 @@ def rip_and_transcode():
     
                 # Create options for the Chrome browser
                 options = webdriver.ChromeOptions()
-                options.headless = True  # Run the browser in headless mode (without a GUI)
+                options.headless = False  # Run the browser in headless mode (without a GUI)
                 options.add_argument("--silent")  # Suppress logging
                 options.add_argument(f'user-agent={user_agent}')  # Set the user agent
                 options.add_argument("--window-size=1920,1080")  # Set the window size
