@@ -50,5 +50,6 @@
 >  -  `tkinter`: This library provides functions for creating graphical user interfaces.
 
   
-
-      pip install bs4 Pillow makemkv googlesearch selenium
+```bash
+pip install bs4 Pillow makemkv googlesearch selenium
+```
