@@ -7,7 +7,6 @@ import ctypes
 import subprocess
 import shutil
 import threading
-import imdb
 import ctypes
 import shutil
 import codecs
@@ -19,17 +18,12 @@ import threading
 import subprocess
 import urllib.request
 from bs4 import BeautifulSoup
-from watchdog.observers import Observer
-from watchdog.events import FileSystemEventHandler
-from datetime import datetime
 from tkinter import *
-from tkinter import filedialog
 from PIL import Image as Im
 from PIL import Image
 from makemkv import MakeMKV
 from googlesearch import search
 from selenium import webdriver
-from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 
 
