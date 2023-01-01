@@ -24,7 +24,7 @@
  3. Install the latest version of MakeMKV on your PC.
  4. Install the latest version of Google Chrome on your PC
  5. Make Sure you have a compatible DVD drive attached to your PC
- 6. Download and Mr Ripper 
+ 6. Download and Run The Mr Ripper Script
 
 
 ## Step 1
@@ -94,4 +94,29 @@ pip install bs4 Pillow makemkv googlesearch selenium
 -  LG BH16NS55, UHD Friendly Internal 5.25 sata | Rip speed 8x BD 66 ~45 mins BD 100 ~1 hour if flashed properly other wise 6x rip speed and slower then BU40N  
 -  Buffalo BRUHD-PU3-BK, UHD Official, External Slim 9.5mm USB 3.0 LG BU40N inside| Rip speed 6x BD 66 ~45 mins BD 100 ~1 hour 5mins  
 -  Archgon MD-8107S-U3-UHD, UHD Official, External Slim 9.5mm LG BU40N inside USB 3.0-Marty| Rip speed 6x BD 66 ~45 mins BD 100 ~1 hour 5mins
+
+## Step 6
+
+### To download the zip file for the Mr Ripper program from GitHub, follow these steps:
+
+1.  Go to the following link: [https://github.com/mickdupreez/mr_ripper](https://github.com/mickdupreez/mr_ripper)
+2.  Click on the green "Code" button, then click on the "Download ZIP" button.
+3.  Save the zip file to a location on your PC, such as your desktop or a folder in your documents.
+
+To extract the zip file and place the program in a directory where you want to store your movie collection, follow these steps:
+
+1.  Locate the zip file on your PC and right-click on it.
+2.  Select "Extract All" from the menu.
+3.  In the "Extract Compressed (Zipped) Folders" window, click on the "Browse" button and select the directory where you want to store your movie collection.
+4.  Click on the "Extract" button to extract the zip file to the selected directory.
+
+To open and run the Mr Ripper program, follow these steps:
+
+1.  Open the directory where you extracted the Mr Ripper program. 
+2.  Open a terminal here by right clicking in the directory then selecting open in terminal, alternatively you can open a terminal and type `cd "the location of the directory where you extracted the Mr Ripper program.
+3. Type the following command to run the script
+
+```bash
+python .\Mr_Ripper_v2.0.py
+```
 
