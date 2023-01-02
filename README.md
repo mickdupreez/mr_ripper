@@ -18,19 +18,15 @@
 # ![](https://i.imgur.com/4npssPG.jpeg)
 # Description
 ### What the script can do and why you need it. 
-This scrip was written for the purpous of simplifying and streamlineing the whole process of digitizeing a DVD collection, with all the steps involved it can be time consumeing and repetative
+This script automates the process of digitizing a DVD collection. It simplifies the process by performing the following tasks automatically:
 
-instead of opening 2 - 3 diffrent programs all with diffrent settings and configuration each time you insert a new dvd, run this script it will simplify the process by implementing the following automations.
-- Automatically RIP your DVDs to a directory on your PC with 0 input buttons or settings.
-- Automatically Transcode the file if it is over a certain size "20GB" default.
-- Automatically gets the correct Movie title and Poster art work.
-- Automatically places the movie in a folder with the correct movie name with the poster art.
-### The whole idea is
-- Run the script.
-- Insert a DVD into the drive.
-- Insert a new DVD when that one gets ejected
-- Done
-Everything else is done for you.
+- Ripping the DVD to a directory on your PC with no input required from you
+- Transcoding the file if it is over a default size of 20GB
+- Retrieving the correct movie title and poster artwork
+- Placing the movie in a folder with the correct movie name and poster artwork
+- 
+To use the script, simply run it and insert a DVD into the drive. When the DVD is ejected, insert a new one and the process will repeat until all DVDs have been digitized. The script streamlines the process by eliminating the need to open multiple programs and configure different settings each time a new DVD is inserted.
+
 # Getting started.
 ## Steps that need to be completed before the script will run on your PC
 
