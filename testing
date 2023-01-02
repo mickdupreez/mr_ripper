@@ -53,7 +53,6 @@ class Directories:
             self.uncompressed # The uncompressed directory
         ]
         self.create_directories() # Call the create_directories method
-        self.create_plex_subdirs() # Call the create_plex_subdirs method
         self.compressed_list = os.listdir(self.compressed) # A list of items in the compressed directory
         self.plex_list = os.listdir(self.plex) # A list of items in the plex directory
         self.temp_list = os.listdir(self.temp) # A list of items in the temp directory
@@ -69,17 +68,13 @@ class Directories:
                 os.mkdir(directory) # Create directory
             else: # Skip if directory exists
                 pass
-
-    def create_plex_subdirs(self):
-        """
-            This method creates the directories in the plex directory for the letters A to Z
-        """
         for letter in ascii_uppercase: # For each letter in the ascii_uppercase string
             directory = self.plex + letter + '/' # Create the directory path
             if os.path.isdir(directory) != True: # If directory does not exist
                 os.mkdir(directory) # Create directory
             else: # Skip if directory exists
                 pass
+
 
 
 
@@ -100,10 +95,8 @@ def rip_and_transcode():
         If no CD-ROM drive is found, the function returns None.
         """
         try:
-            # Get a list of all logical drives on the system
-            drives = win32api.GetLogicalDriveStrings()
-            # Split the list by the null character and remove the last element
-            drives = drives.split('\000')[:-1]
+            # Get a list of all logical drives on the system and Split the list by the null character and remove the last element
+            drives = win32api.GetLogicalDriveStrings().split('\000')[:-1]
             # Iterate through the list of drives
             for drive in drives:
                 # Check if the drive type is a CD-ROM drive
@@ -117,25 +110,27 @@ def rip_and_transcode():
 
     def preprocess_string(string):
         """
-        This function takes a string as input and preprocesses it in the following way:
-        - Removes any 4-digit numbers from the string
-        - Removes any non-alphanumeric characters from the string
-        - Strips leading and trailing whitespace from the string
-        - Converts the string to lowercase
-        The processed string is returned as output.
+        Preprocess a string by removing all numbers except for 4-digit and single-digit numbers,
+        removing all non-alphanumeric characters, stripping leading and trailing whitespace,
+        and lowercasing the string.
+
+        Parameters:
+        string (str): The string to preprocess.
+
+        Returns:
+        str: The preprocessed string.
         """
         try:
-            # Remove any 4-digit numbers from the string
-            string = re.sub(r'\b\d{4}\b', '', string)
-            # Remove any non-alphanumeric characters from the string
+            # Remove all numbers except for 4-digit and single-digit numbers
+            string = re.sub(r'(?<!\b\d{4})(?<!\b\d)\b\d+\b(?!\d\b)', '', string)
+            # Remove all non-alphanumeric characters
             string = re.sub(r'[^A-Za-z0-9\s]', '', string)
-            # Strip leading and trailing whitespace from the string
+            # Strip leading and trailing whitespace
             string = string.strip()
-            # Convert the string to lowercase
+            # Lowercase the string
             string = string.lower()
             return string
         except Exception as e:
-            # If an exception is thrown, print an error message and return the original string
             print(f"An error occurred while preprocessing the string :{string}:: {e}")
             return string
 
@@ -230,7 +225,7 @@ def rip_and_transcode():
                 return items
         except Exception as e:
             # If an exception is thrown, print an error message and return None
-            print(f"An error occurred while reading the file: {e}")
+            print(f"An error occurred while reading the {possible_title} file: {e}")
             return None
 
     def get_movie_title():
@@ -549,7 +544,7 @@ def rip_and_transcode():
                 output_directory = f"{Directories().temp}{movie_title}/"
                 os.makedirs(output_directory, exist_ok=True)
                 if movie_poster != None:
-                    movie_poster.save(f"{output_directory}/{movie_title}.jpg")
+                    movie_poster.save(f"{output_directory}/{movie_title}.png")
                 try:
                     # Use the `MakeMKV` library to rip the movie to the output directory
                     makemkv = MakeMKV(0)
