@@ -45,11 +45,6 @@ class Directories:
         self.temp = "temp/" # The directory where the file gets ripped to.
         self.transcoding = "transcoding/" # The directory where the files get transcoded.
         self.uncompressed = "uncompressed/" # The directory where the files wait to be transcoded.
-        self.compressed_list = os.listdir(self.compressed) # A list of items in the compressed directory
-        self.plex_list = os.listdir(self.plex) # A list of items in the plex directory
-        self.temp_list = os.listdir(self.temp) # A list of items in the temp directory
-        self.transcoding_list = os.listdir(self.transcoding) # A list of items in the transcoding directory
-        self.uncompressed_list = os.listdir(self.uncompressed) # A list of items in the uncompressed directory
         self.directories = [ # A list of all the directories variables above that is used throughout the program
             self.compressed, # The compressed directory
             self.plex, # The plex directory
@@ -62,6 +57,13 @@ class Directories:
                 os.mkdir(directory) # Create directory
             else: # Skip if directory exists
                 pass
+        self.compressed_list = os.listdir(self.compressed) # A list of items in the compressed directory
+        self.plex_list = os.listdir(self.plex) # A list of items in the plex directory
+        self.temp_list = os.listdir(self.temp) # A list of items in the temp directory
+        self.transcoding_list = os.listdir(self.transcoding) # A list of items in the transcoding directory
+        self.uncompressed_list = os.listdir(self.uncompressed) # A list of items in the uncompressed directory
+
+
 
 def rip_and_transcode():
     """

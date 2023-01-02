@@ -16,6 +16,21 @@
   
 
 # ![](https://i.imgur.com/4npssPG.jpeg)
+# Description
+### What the script can do and why you need it. 
+This scrip was written for the purpous of simplifying and streamlineing the whole process of digitizeing a DVD collection, with all the steps involved it can be time consumeing and repetative
+
+instead of opening 2 - 3 diffrent programs all with diffrent settings and configuration each time you insert a new dvd, run this script it will simplify the process by implementing the following automations.
+- Automatically RIP your DVDs to a directory on your PC with 0 input buttons or settings.
+- Automatically Transcode the file if it is over a certain size "20GB" default.
+- Automatically gets the correct Movie title and Poster art work.
+- Automatically places the movie in a folder with the correct movie name with the poster art.
+### The whole idea is
+- Run the script.
+- Insert a DVD into the drive.
+- Insert a new DVD when that one gets ejected
+- Done
+Everything else is done for you.
 # Getting started.
 ## Steps that need to be completed before the script will run on your PC
 
@@ -113,10 +128,10 @@ To extract the zip file and place the program in a directory where you want to s
 To open and run the Mr Ripper program, follow these steps:
 
 1.  Open the directory where you extracted the Mr Ripper program. 
-2.  Open a terminal here by right clicking in the directory then selecting open in terminal, alternatively you can open a terminal and type `cd "the location of the directory where you extracted the Mr Ripper program.
-3. Type the following command to run the script
+2.  Open a terminal here by right clicking in the directory then selecting open in terminal, alternatively you can open a terminal and type `cd "the location of the directory where you extracted the Mr Ripper program" this will take you to the directory.
+3. Then finally type the following command to run the script
 
 ```bash
-python .\Mr_Ripper_v2.0.py
+python Mr_Ripper_v2.0.py
 ```
 
