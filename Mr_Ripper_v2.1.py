@@ -1,6 +1,7 @@
 import os
 import re
 import time
+import curses
 import win32api
 import urllib.request
 import ctypes
@@ -24,24 +25,26 @@ from PIL import Image
 from makemkv import MakeMKV
 from googlesearch import search
 from selenium import webdriver
+from curses import wrapper
+from curses.textpad import Textbox, rectangle
 from selenium.webdriver.common.by import By
 from string import ascii_uppercase
+from colorit import init_colorit, background
 
 
+dvd_drives = []
+try:
+    drives = win32api.GetLogicalDriveStrings()
+    drives = drives.split('\000')[:-1]
+    for drive in drives:
+        if win32file.GetDriveType(drive) == win32file.DRIVE_CDROM:
+            dvd_drives.append(drive)
+except Exception as e:
+    print(f"An error occurred !!!NO DRIVE DETECTED!!!. Please make sure that you have a DVD drive connected to your PC: {e}")
 
 class Directories:
-    """
-        This class checks that all the directories that are required for the program to run
-        exists, if it does not it will create it. 
-        Those directories are then assigned to variables used through out the program.
-        The content of these directories are then placed into lists that are then
-        used throughout the program.
 
-    """
     def __init__(self):
-        """
-            This is a method that gets called each time the Directories class is initialized
-        """
         self.compressed = "compressed/" # The directory where the compressed files go.
         self.plex = "plex/" # The directory where the files go that are ready to be moved uploaded.
         self.temp = "temp/" # The directory where the file gets ripped to.
@@ -62,9 +65,6 @@ class Directories:
         self.uncompressed_list = os.listdir(self.uncompressed) # A list of items in the uncompressed directory
 
     def create_directories(self):
-        """
-            This method creates the directories in the directories list if they don't exist
-        """
         for directory in self.directories: # For each directory in the directories list
             if os.path.isdir(directory) != True: # If directory does not exist
                 os.mkdir(directory) # Create directory
@@ -77,23 +77,21 @@ class Directories:
             else: # Skip if directory exists
                 pass
 
-
 class Movie():
     def __init__(self):
+        drive_letter = dvd_drives[0]
+        drive_number = dvd_drives.index(drive_letter)
+        self.drive_letter = drive_letter
+        self.drive_number = drive_number
+        dvd_drives.remove(drive_letter)
+
+    def Scrape(self):
         try:
-            drives = win32api.GetLogicalDriveStrings().split('\000')[:-1]
-            for drive in drives:
-                if win32file.GetDriveType(drive) == win32file.DRIVE_CDROM:
-                    drive_letter = drive
-        except Exception as e:
-            drive_letter = None
-            print(f"An error occurred !!!NO DRIVE DETECTED!!!. Please make sure that you have a DVD drive connected to your PC: {e}")
-        try:
-            if drive_letter != None:
-                volume_info = win32api.GetVolumeInformation(drive_letter)
+            if self.drive_letter != None:
+                volume_info = win32api.GetVolumeInformation(self.drive_letter[:-1])
                 volume_info = volume_info[0]
                 volume_info = volume_info.replace("_", " ")
-                disc_information = MakeMKV(drive_letter).info()
+                disc_information = MakeMKV(self.drive_letter[:-1]).info()
                 disc_info = disc_information["disc"]["name"]
                 disc_info = disc_info.replace("_", " ")
                 try:
@@ -152,7 +150,7 @@ class Movie():
                     print("best_match = volume_info_percent_max")
                     best_match = volume_info_match
         except Exception as e:
-            print(f"An unexpected error occurred, using the 'volume_info' as the string to search for. : {e}")
+            print(f"An unexpected error occurred, using the 'volume_info' as the string to search for. Please try again later : {e}")
             best_match = volume_info
         try:
             if best_match != None:
@@ -170,7 +168,7 @@ class Movie():
                         link = links[:1]
                         link = link[0]
             else:
-                print("An error occurred, you dont have any Title matches. Please try again")
+                print("An error occurred, you dont have any Title matches. Please try later.")
                 link = None
         except Exception as e:
             print(f"An unexpected error occurred: {e}")
@@ -216,33 +214,117 @@ class Movie():
             else:
                 print(f"An error occurred while getting the link, try again later")
                 movie_title = best_match
-                movie_poster = "default.png"
+                
+                movie_poster = Im.open("default.png")
         except Exception as e:
             print(f"An error occurred while downloading the movie data from the web, try again later : {e}")
             movie_title = best_match
-            movie_poster = "default.png"
-        self.drive_letter = drive_letter
+            movie_poster = Im.open("default.png")
+        try:
+            if movie_title != None:
+                output_directory = f"{Directories().temp}{movie_title}/"
+                os.makedirs(output_directory, exist_ok=True)
+                if movie_poster == None:
+                    movie_poster = Im.open("default.png")
+                    movie_poster.save(f"{output_directory}/{movie_title}.png")
+                else:
+                    movie_poster.save(f"{output_directory}/{movie_title}.png")
+            else:
+                print("An error occurred while creating the output directory for this DVD, please try again.")
+                drives.append(self.drive_letter)
+                ctypes.windll.WINMM.mciSendStringW(u"set cdaudio door open", None, 0, None)
+                
+        except Exception as e:
+            print("An error occurred while creating the output directory for this DVD, please try again.")
+            shutil.rmtree(f"{Directories().temp}{movie_title}")
+
         self.volume_info = volume_info
         self.disc_info = disc_info
         self.best_match = best_match
         self.link = link
         self.title = movie_title
         self.poster = movie_poster
-        print('!!!DEBUGGING!!!')
-        print('The Movie Class has been successfully initialized')
-        print(f"DVD Drive letter : {self.drive_letter}")
-        print(f"Name in the volume information : {self.volume_info}")
-        print(f"Name in the disc information : {self.disc_info}")
-        print(f"Closest match found in the list of available movies : {self.best_match}")
-        print(f"Here is the IMDB link fo the Movie : {self.link}")
-        print(f"Here is the corrected Movie Title : {self.title}")
-        print(f"Here is scraped Movie Poster : {self.poster}")
+        self.output_directory = output_directory
 
-    def rip_and_transcode(self):
+    def Rip(self):
         try:
-            if self.title != None:
-                output_directory = f"{Directories().temp}{self.title}/"
-                os.makedirs(output_directory, exist_ok=True)
-                pass
+            makemkv = MakeMKV(self.drive_number)
+            makemkv.mkv(self.drive_number, self.output_directory)
+        except:
+            print("An error occurred while ripping this DVD, please try again.")
+            uncompressed_file = None
+            drives.append(self.drive_letter)
+            ctypes.windll.WINMM.mciSendStringW(u"set cdaudio door open", None, 0, None)
+        try:
+            for file in os.listdir(f"{Directories().temp}{self.title}"):
+                if file.endswith(".mkv"):
+                    uncompressed_file = file
+                    print(f"Here is the output directory : {uncompressed_file}")
+                    drives.append(self.drive_letter)
+                    self.uncompressed_file = uncompressed_file
+                    ctypes.windll.WINMM.mciSendStringW(u"set cdaudio door open", None, 0, None)
         except Exception as e:
-            print(f"There Has been an issue ripping this file, please reinsert the DVD and try again. : {e}")
+            print("An error occurred while looking for the ripped file, please try again.")
+            uncompressed_file = None
+
+def rip_movie():
+    if dvd_drives != []:
+        print(dvd_drives)
+        time.sleep(1)
+        DVDDRIVE = Movie()
+        DVDDRIVE.Scrape()
+        DVDDRIVE.Rip()
+        TITLE = DVDDRIVE.title
+        POSTER = DVDDRIVE.poster
+        OUTPUTDIR = DVDDRIVE.output_directory
+        return DVDDRIVE, TITLE, POSTER, OUTPUTDIR
+    else:
+        time.sleep(10)
+
+def transcode_movie():
+    if Directories().uncompressed_list != []:
+        def transcode():
+            for dir in Directories().transcoding_list:
+                target_dir = dir
+                print(target_dir)
+                for file in os.listdir(f"{Directories().transcoding}{target_dir}"):
+                    print(file)
+                    if file.endswith(".mkv"):
+                        input_file = file
+                        output_file = f"{Directories().transcoding}{target_dir}/{target_dir}.mkv"
+                        command  = [
+                            "HandBrakeCLI.exe", "--preset-import-file", "profile.json", "-Z", "PLEX",
+                            "-i", input_file, "-o",
+                            output_file
+                        ]
+                        print(input_file, output_file)
+                        subprocess.run(command, shell=True)
+                        time.sleep(3)
+                        os.remove(f"{Directories().transcoding}{target_dir}/{input_file}")
+                        time.sleep(1)
+                        shutil.move(f"{Directories().transcoding}{target_dir}", f"{Directories().compressed}")
+                        time.sleep(1)
+        title = Directories().uncompressed_list[0]
+        dir_location = f"{Directories().uncompressed}{title}"
+        output_directory_size = sum(os.path.getsize(os.path.join(dir_location, f)) for f in os.listdir(dir_location))
+        output_directory_size_gb = output_directory_size / (1024 ** 3)
+        if output_directory_size_gb < 20:
+            dir_destination =  f"{Directories().transcoding}"
+            if len(Directories().transcoding_list) <= 1:
+                shutil.move(dir_location, dir_destination)
+                threading.Thread(target=transcode).start()
+            else:
+                pass
+        else:
+            dir_destination = f"{Directories().compressed}"
+            for file in os.listdir(f"{Directories().uncompressed}{title}"):
+                if file.endswith('.mkv'):
+                    os.rename(f"{Directories().uncompressed}{title}/{file}", f"{Directories().uncompressed}{title}/{title}.mkv")
+                    shutil.move(dir_location, dir_destination)
+    else:
+        time.sleep(5)
+
+while True:
+    time.sleep(5)
+    threading.Thread(target=rip_movie).start()
+    threading.Thread(target=transcode_movie).start()
