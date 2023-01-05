@@ -937,5 +937,5 @@ def start_rip():
         
 
 threading.Thread(target=refresh).start()
-#threading.Thread(target=start_rip).start()
+threading.Thread(target=start_rip).start()
 root.mainloop()
