@@ -2,12 +2,7 @@ import os
 import re
 import time
 import curses
-import win32api
-import urllib.request
-import ctypes
-import subprocess
-import shutil
-import threading
+import emoji
 import ctypes
 import shutil
 import codecs
@@ -30,6 +25,7 @@ from curses.textpad import Textbox, rectangle
 from selenium.webdriver.common.by import By
 from string import ascii_uppercase
 from colorit import init_colorit, background
+
 
 
 dvd_drives = []
@@ -77,6 +73,153 @@ class Directories:
                 os.mkdir(directory) # Create directory
             else: # Skip if directory exists
                 pass
+
+
+
+
+
+
+
+
+def terminal_ui(stdscr):
+    curses.init_pair(1, curses.COLOR_RED, curses.COLOR_BLACK)
+    curses.init_pair(2, curses.COLOR_GREEN, curses.COLOR_BLACK)
+    curses.init_pair(3, curses.COLOR_YELLOW, curses.COLOR_BLACK)
+    curses.init_pair(4, curses.COLOR_BLUE, curses.COLOR_BLACK)
+    curses.init_pair(5, curses.COLOR_MAGENTA, curses.COLOR_BLACK)
+    curses.init_pair(6, curses.COLOR_CYAN, curses.COLOR_BLACK)
+    curses.init_pair(7, curses.COLOR_WHITE, curses.COLOR_BLACK)
+    curses.init_pair(8, curses.COLOR_BLACK, curses.COLOR_BLACK)
+    RED = curses.color_pair(1)
+    GREEN = curses.color_pair(2)
+    YELLOW = curses.color_pair(3)
+    BLUE = curses.color_pair(4)
+    MAGENTA = curses.color_pair(5)
+    CYAN = curses.color_pair(6)
+    WHITE = curses.color_pair(7)
+    BLACK = curses.color_pair(8)
+
+    def main_box():
+        stdscr.addstr(1, 1, "Mr Ripper 2.1.1 https://github.com/mickdupreez/mr_ripper|", BLUE | curses.A_BOLD)
+        if Directories().temp_list == [] and Directories().transcoding_list != []:
+            stdscr.addstr(1, 65, "!!! TRANSCODING IN PROGRES PLEASE WAIT !!!", RED | curses.A_BOLD)
+        if Directories().temp_list != [] and Directories().transcoding_list == []:
+            stdscr.addstr(1, 68, "!!! RIPPING IN PROGRES PLEASE WAIT !!!", RED | curses.A_BOLD)
+        if Directories().temp_list != [] and Directories().transcoding_list != []:
+            stdscr.addstr(1, 62, "!!! RIP AND TRANSCODE IN PROGRESS PLEASE WAIT !!!", RED | curses.A_BOLD)
+        if Directories().temp_list == [] and Directories().transcoding_list == []:
+            stdscr.addstr(1, 65, "!!! INSERT A DVD OR BLURAY TO GET STARTED !!!", GREEN | curses.A_BOLD)
+        rectangle(stdscr, 0, 0, 28, 115)
+    
+    def get_directory_size(path):
+        total_size = 0
+        for dirpath, dirnames, filenames in os.walk(path):
+            for f in filenames:
+                fp = os.path.join(dirpath, f)
+                total_size += os.path.getsize(fp)
+        if total_size < 1024:
+            return f"{total_size} B"
+        elif total_size < 1024**2:
+            return f"{total_size/1024:.2f} KB"
+        elif total_size < 1024**3:
+            return f"{total_size/1024**2:.2f} MB"
+        else:
+            return f"{total_size/1024**3:.2f} GB"
+
+    def get_storage_size(file_path):
+        total, used, free = shutil.disk_usage(os.path.dirname(os.path.abspath(file_path)))
+        total = total // (1024 ** 3)
+        total = f"{total} GB"
+        used = used // (1024 ** 3)
+        used = f"{used} GB"
+        free = free // (1024 ** 3)
+        free = f"{free} GB"
+        return total, used, free
+
+    def stats_box():
+        total, used, free, = get_storage_size('README.md')
+        stdscr.addstr(19, 12, "- Directory Sizes and stats -", BLUE | curses.A_BOLD)
+        stdscr.addstr(20, 2, f"Free space on Drive:      {free} out of {total}", GREEN | curses.A_BOLD)
+        stdscr.addstr(21, 2, f"Drive space used:         {get_directory_size('.')} out of {total}", GREEN | curses.A_BOLD)
+        stdscr.addstr(22, 2, f"Ripping Directory:        {get_directory_size(Directories().temp)} out of {get_directory_size('.')}", GREEN | curses.A_BOLD)
+        stdscr.addstr(23, 2, f"Uncompressed Directory:   {get_directory_size(Directories().uncompressed)} out of {get_directory_size('.')}", GREEN | curses.A_BOLD)
+        stdscr.addstr(24, 2, f"Transcoding Directory:    {get_directory_size(Directories().transcoding)} out of {get_directory_size('.')}", GREEN | curses.A_BOLD)
+        stdscr.addstr(25, 2, f"Compressed Directory:     {get_directory_size(Directories().compressed)} out of {get_directory_size('.')}", GREEN | curses.A_BOLD)
+        stdscr.addstr(26, 2, f"Plex Directory:           {get_directory_size(Directories().plex)} out of {get_directory_size('.')}", GREEN | curses.A_BOLD)
+        rectangle(stdscr, 18, 1, 27, 56)
+
+    
+    def temp_box():
+        stdscr.addstr(3, 14, "- Movies That Are Being Ripped -", MAGENTA | curses.A_BOLD)
+        stdscr.addstr(4, 27, get_directory_size('temp'), GREEN | curses.A_BOLD)
+        rectangle(stdscr, 5, 1, 9, 56)
+        rectangle(stdscr, 2, 1, 9, 56)
+        row = 5
+        col = 2
+        for i in Directories().temp_list:
+            word = i
+            row = row + 1
+            stdscr.addstr(row, col, word, RED | curses.A_BOLD)
+            
+    def transcoding_box():
+        stdscr.addstr(11, 14, "- Movies That Are Transcoding -", YELLOW | curses.A_BOLD)
+        stdscr.addstr(12, 27, get_directory_size(Directories().transcoding), GREEN | curses.A_BOLD)
+        rectangle(stdscr, 13, 1, 17, 56)
+        rectangle(stdscr, 10, 1, 17, 56)
+        row = 13
+        col = 2
+        for i in Directories().transcoding_list:
+            word = i
+            row = row + 1
+            stdscr.addstr(row, col, word, RED | curses.A_BOLD)
+
+    def uncompressed_box():
+        stdscr.addstr(3, 65, "- Movies That Are Queued For Transcoding -", CYAN | curses.A_BOLD)
+        stdscr.addstr(4, 83, get_directory_size(Directories().uncompressed), GREEN | curses.A_BOLD)
+        rectangle(stdscr, 5, 57, 27, 114)
+        rectangle(stdscr, 2, 57, 27, 114)
+        row = 5
+        col = 58
+        for i in Directories().uncompressed_list:
+            time.sleep(.1)
+            word = i
+            row = row + 1
+            stdscr.addstr(row, col, word, RED | curses.A_BOLD)
+
+    count = 0
+    while True:
+        time.sleep(0.6)
+        RED = curses.color_pair(1)
+        stdscr.clear()
+        count = count + 1
+        if count % 2 == 0:
+            RED = BLACK
+
+        main_box()
+        temp_box()
+        transcoding_box()
+        stats_box()
+        uncompressed_box()
+        stdscr.refresh()
+
+def show_terminal():
+    curses.wrapper(terminal_ui)
+
+threading.Thread(target=show_terminal).start()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 class Movie:
     def __init__(self):
@@ -324,11 +467,10 @@ def transcode_movie():
                     shutil.move(dir_location, dir_destination)
     else:
         time.sleep(5)
-
-#while True:
-#    time.sleep(5)
-#    threading.Thread(target=rip_movie).start()
-#    threading.Thread(target=transcode_movie).start()
+def rip_and_transcode():
+    time.sleep(5)
+    threading.Thread(target=rip_movie).start()
+    threading.Thread(target=transcode_movie).start()
 
 
 
@@ -341,7 +483,7 @@ def transcode_movie():
 
 
 root = Tk()
-root.title("Mr Ripper")
+root.title("https://github.com/mickdupreez/mr_ripper")
 root.iconbitmap("icon.ico")
 root.geometry("1491x900")
 root.resizable(False, False)
@@ -371,44 +513,26 @@ back_ground_img = Label(image=default_background)
 back_ground_img.place(x=447, y=0)
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 def left_frame_ui():
     ui_frame_left = LabelFrame(
         root, 
-        text="Mr Ripper.v2.1.1",  # Title for the label frame
+        text="Ripping And Transcoding",  # Title for the label frame
         bg=background1,  # Background color
         font=("Comic Sans MS",18, "bold"),  # Font and size for the title
         padx=10, pady=10,  # Padding for the label frame
         fg=green  # Color of the title text
     )
-    intro = """     Welcome to Mr Ripper's Movie Ripper.
-    This Program will Automatically Rip and
-    Transcode and Blu-Ray or DVD Movies.
-    then add it to your media collection."""
+    intro = "Welcome to Mr Ripper's Movie Ripper.\n"
+    intro2 = "This Program will Automatically Rip and Transcode \n"
+    intro3 = "your Blu-Ray or DVD Movies and add them \n"
+    intro4 = "to your Movie collection.\n"
+    intro5 = "\nPlease wait for all the boxes below to be empty\n"
+    intro6 = "before you quit the program,"
+
+    
     intro_label = Label(
         ui_frame_left, 
-        text=intro,  # Text for the label
+        text=intro+intro2+intro3+intro4+intro5+intro6,  # Text for the label
         width=0,  # Width of the label
         bg=background1,  # Background color of the label
         fg=cyan,  # Color of the text
@@ -416,33 +540,36 @@ def left_frame_ui():
     )
     intro_label.place(x=0, y=0)
     ui_frame_left.place(x=0, y=2, width=450, height=900)
-    ripping_label = """READY! Insert a Disc for Ripping.
-    You can Rip upto 4 movies at the same time."""
-    ripping_label1 = """Hold tight! Movie Ripping in progress.
-    Please wait until this list is empty before quitting."""
-
-
 
     def ripping_ui():
-        ripping_status = Label(
+        ripping_status1 = Label(
+            ui_frame_left,
+            text="Nothing is Ripping:",
+            bg=background1,
+            fg=green,
+            font=("Comic Sans MS", 15, "bold")
+        )
+        ripping_label = "!READY! Insert a Disc or Discs for Ripping.\nYou can Rip up to 3 movies at the same time."
+        ripping_label1 = "!Please Hold Tight! Movie Ripping in progress.\nPlease wait until this list is empty before quitting!"
+        ripping_status2 = Label(
         ui_frame_left, 
         text=ripping_label,  # Text for the label
-        width=0,  # Width of the label
         bg=background1,  # Background color of the label
-        fg=green,  # Color of the text
+        fg=purple,  # Color of the text
         font=("Comic Sans MS", 13, "bold")  # Font and size of the text
     )
         ripping_listbox = Listbox(
             ui_frame_left,
             bg=background2,
-            fg=pink,
+            fg=orange,
             width=47,
-            height=4,
+            height=3,
             bd=0,
             font=("Comic Sans MS", 11, "bold")
             )
-        ripping_listbox.place(x=1, y=204)
-        ripping_status.place(x=0, y=120)
+        ripping_status1.place(x=0, y=204)
+        ripping_status2.place(x=0, y=235)
+        ripping_listbox.place(x=1, y=295)
         
         def refresh():
             while True:
@@ -451,7 +578,8 @@ def left_frame_ui():
                     if Directories().temp_list != []:
                         temp = Directories().temp_list
                         file_being_ripped = temp[0]
-                        ripping_status.config(text=ripping_label1, fg=red)
+                        ripping_status2.config(text=ripping_label1, fg=orange)
+                        ripping_status1.config(text="Something is Ripping:", fg=red)
                         try:
                             for file in os.listdir(f"{Directories().temp}{file_being_ripped}"):
                                 if file.endswith(".jpg"):
@@ -467,11 +595,13 @@ def left_frame_ui():
                             ripping_listbox.insert(END, f" {i}")
                     if len(Directories().temp_list) == 0:
                             back_ground_img.config(image=default_background)
-                            ripping_status.config(text=ripping_label, fg=green)
+                            ripping_status2.config(text=ripping_label, fg=purple)
+                            ripping_status1.config(text="Nothing is Ripping", fg=green)
                 time.sleep(5)
         threading.Thread(target=refresh).start()
-
-
+    
+    ripping_ui()
+    
     def uncompressed_ui():
         
         uncompressed_label1 = Label(
@@ -482,8 +612,8 @@ def left_frame_ui():
         fg=green,  # Color of the text on the label
         font=("Comic Sans MS", 15, "bold")  # Font and size of the text on the label
         )
-        uncompressed_text1 = "READY! Que is empty\nYou can Transcode upto 3 movies at the same time."
-        uncompressed_text2 = "Hold tight! Transcoding in progress.\nPlease wait until this list is empty before quitting."
+        uncompressed_text1 = "!READY! Que is empty Waiting for Ripped Movies.\nThere is no limit on the number of Queued Movies."
+        uncompressed_text2 = "!Please Hold Tight! There are Movies in the Que.\nPlease wait until this list is empty before quitting!"
         uncompressed_label2 = Label(
         ui_frame_left,
         text=uncompressed_text1,  # Text displayed on the label
@@ -502,13 +632,12 @@ def left_frame_ui():
             font=("Comic Sans MS", 11, "bold")  # Font and size of the text in the listbox
             )
         
-        uncompressed_label1.place(x=0, y=220)
-        uncompressed_label2.place(x=0, y=395)
-        uncompressed_listbox.place(x=1, y=460)
+        uncompressed_label1.place(x=0, y=365)
+        uncompressed_label2.place(x=0, y=396)
+        uncompressed_listbox.place(x=1, y=456)
         
         
         def refresh():
-
             while True:
                 if len(Directories().uncompressed_list) != len(uncompressed_listbox.get(0, END)):
                     uncompressed_listbox.delete(0, END)
@@ -518,17 +647,18 @@ def left_frame_ui():
                     uncompressed_label2.configure(text=uncompressed_text2, fg=orange)
                     if len(Directories().uncompressed_list) == 0:
                         uncompressed_label1.configure(text="Nothing in Que:", fg=green)
-                        uncompressed_label2.configure(text=uncompressed_text1, fg=green)
-                        
+                        uncompressed_label2.configure(text=uncompressed_text1, fg=purple)
                 time.sleep(5)
         threading.Thread(target=refresh).start()
 
+    uncompressed_ui()
+
     def transcoding_ui():
-        transcoding_label1 = "READY! Waiting for a movie to transcode\nYou can Transcode upto 3 movies at the same time."
-        transcoding_label2 = "Hold tight! Transcoding in progress.\nPlease wait until this list is empty before quitting."
+        transcoding_label1 = "!READY! Waiting for a movie to transcode\nYou can Transcode upto 3 movies at the same time."
+        transcoding_label2 = "!Please Hold Tight! Transcoding in progress.\nPlease wait until this list is empty before quitting!"
         transcoding_status1 = Label(
             ui_frame_left, 
-            text="Nothing Transcoding:",  # Text for the label
+            text="Nothing is Transcoding:",  # Text for the label
             width=0,  # Width of the label
             bg=background1,  # Background color of the label
             fg=green,  # Color of the text
@@ -552,9 +682,9 @@ def left_frame_ui():
             font=("Comic Sans MS", 11, "bold")  # Font and size of the text in the listbox
         )
         
-        transcoding_status1.place(x=0, y=680)
-        transcoding_status2.place(x=0, y=710)
-        transcoding_dir_listbox.place(x=1, y=770)
+        transcoding_status1.place(x=0, y=679) # + 31
+        transcoding_status2.place(x=0, y=710) # + 60
+        transcoding_dir_listbox.place(x=0, y=770)
         
         def refresh():
             while True:
@@ -570,225 +700,96 @@ def left_frame_ui():
                 time.sleep(5)
         threading.Thread(target=refresh).start()
 
-
-
-    #ripping_ui()
     transcoding_ui()
-    uncompressed_ui()
-    
 left_frame_ui()
 
-
-
-#def compressed_ui():
-#    completed_status = Label(
-#        ui_frame_left, 
-#        text="Completed Movies:",  # Text for the label
-#        width=0,  # Width of the label
-#        bg=background1,  # Background color of the label
-#        fg=purple,  # Color of the text
-#        font=("Comic Sans MS", 15, "bold")  # Font and size of the text
-#    )
-#    completed_status_instructions = Label(
-#        ui_frame_left, 
-#        text=instructions1,  # Text for the label
-#        width=0,  # Width of the label
-#        bg=background1,  # Background color of the label
-#        fg=cyan,  # Color of the text
-#        font=("Comic Sans MS", 11, "bold")  # Font and size of the text
-#    )
-#    compressed_dir_listbox = Listbox(
-#        ui_frame_left, 
-#        bg=background2,  # Background color of the listbox
-#        fg=purple,  # Color of the text in the listbox
-#        width=47,  # Width of the listbox
-#        height=10,  # Height of the listbox
-#        bd=0,  # Border size of the listbox
-#        font=("Comic Sans MS", 11, "bold")  # Font and size of the text in the listbox
-#    )
-#    completed_status_instructions.place(x=0, y=570)
-#    compressed_dir_listbox.place(x=1, y=620)
-#    completed_status.place(x=0, y=540)
-#    def refresh():
-#        while True:
-#            if len(Directories().compressed_list) != len(compressed_dir_listbox.get(0, END)):
-#                compressed_dir_listbox.delete(0, END)
-#                for i in Directories().compressed_list:
-#                    compressed_dir_listbox.insert(END, f" {i}")
-#            time.sleep(5)
-#    threading.Thread(target=refresh).start()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# RIGHT SIDE OF THE UI
-# Create a label frame for the right UI elements
-ui_frame_right = LabelFrame(
-    root, 
-    text="https://github.com/mickdupreez/mr_ripper",  # Text displayed on the label frame
-    bg=background1,  # Background color of the label frame
-    font=("Comic Sans MS", 16, "bold"),  # Font and size of the text on the label frame
-    padx=10, pady=10,  # Padding around the text on the label frame
-    fg=yellow  # Color of the text on the label frame
-)
-# Place the right UI frame at the specified coordinates on the root window
-ui_frame_right.place(x=1041, y=2, width=450, height=900)
-
-
-# Create a label to display text on the right UI frame
-movie_collection_label1 = Label(
-    ui_frame_right, 
-    text="Movie Collection:",  # Text displayed on the label
-    bg=background1,  # Background color of the label
-    fg=green,  # Color of the text on the label
-    width=0,  # Width of the label
-    font=("Comic Sans MS", 15, "bold")  # Font and size of the text on the label
-)
-# Place the label at the specified coordinates on the right UI frame
-movie_collection_label1.place(x=0, y=345)
-
-
-# Create a label to display text on the right UI frame
-movie_collection_label2 = Label(
-    ui_frame_right, 
-    text=instructions2,  # Text displayed on the label
-    width=0,  # Width of the label
-    bg=background1,  # Background color of the label
-    fg=pink,  # Color of the text on the label
-    font=("Comic Sans MS", 11, "bold")  # Font and size of the text on the label
-)
-# Place the label at the specified coordinates on the right UI frame
-movie_collection_label2.place(x=0, y=375)
-
-
-
-
-
-# Create a label to display text on the right UI frame
-info_label = Label(
-    ui_frame_right,  # Text displayed on the label
-    text=info_label,  # Width of the label
-    width=0,  # Width of the label
-    bg=background1,  # Background color of the label
-    fg=cyan,  # Color of the text on the label
-    font=("Comic Sans MS", 15, "bold")  # Font and size of the text on the label
+def right_frame_ui():
+    
+    ui_frame_right = LabelFrame(
+        root, 
+        text="Compressed Movies and your Collection",  # Text displayed on the label frame
+        bg=background1,  # Background color of the label frame
+        font=("Comic Sans MS", 16, "bold"),  # Font and size of the text on the label frame
+        padx=10, pady=10,  # Padding around the text on the label frame
+        fg=green  # Color of the text on the label frame
     )
-# Place the label at the specified coordinates on the right UI frame
-info_label.place(x=0, y=0)
+    ui_frame_right.place(x=1041, y=2, width=450, height=900)
 
 
-# Create a listbox for the plex directory
-plex_listbox = Listbox(
-    ui_frame_right,
-    bg=background2,  # Background color of the listbox
-    fg=green,  # Color of the text in the listbox
-    width=47,  # Width of the listbox
-    height=18,  # Height of the listbox
-    bd=0,  # Border size of the listbox
-    font=("Comic Sans MS", 11, "bold")  # Font and size of the text in the listbox
-    )
-# Place the plex_listbox at the specified coordinates on the right UI frame
-plex_listbox.place(x=1, y=446)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-def refresh():
-    """
-    This function refreshes the GUI to show the latest status of the directories and the movies in them.
-    It continuously loops, with a delay of 1 second between each iteration, to check if the number of items in the directories
-    has changed. If the number of items has changed, it updates the corresponding listbox and label with the new items.
-    If the temp directory is not empty, it also updates the status text and background image. If the temp directory is empty,
-    it sets the background image to the default image and updates the status text. If the transcoding directory is not empty,
-    it updates the status text. If the transcoding directory is empty, it updates the status text. If the uncompressed
-    directory is not empty, it updates the label text and color. If the uncompressed directory is empty, it updates the
-    label text and color. If the compressed directory is not empty, it updates the compressed listbox. If the plex
-    directory is not empty, it updates the plex listbox.
-    """
-    while True:
-
-                    
-
+    def compressed_ui():
+        completed_status = Label(
+            ui_frame_right, 
+            text="Completed Movies:",  # Text for the label
+            width=0,  # Width of the label
+            bg=background1,  # Background color of the label
+            fg=purple,  # Color of the text
+            font=("Comic Sans MS", 15, "bold")  # Font and size of the text
+        )
+        completed_status_instructions = Label(
+            ui_frame_right, 
+            text=instructions1,  # Text for the label
+            width=0,  # Width of the label
+            bg=background1,  # Background color of the label
+            fg=cyan,  # Color of the text
+            font=("Comic Sans MS", 11, "bold")  # Font and size of the text
+        )
+        compressed_dir_listbox = Listbox(
+            ui_frame_right, 
+            bg=background2,  # Background color of the listbox
+            fg=purple,  # Color of the text in the listbox
+            width=47,  # Width of the listbox
+            height=10,  # Height of the listbox
+            bd=0,  # Border size of the listbox
+            font=("Comic Sans MS", 11, "bold")  # Font and size of the text in the listbox
+        )
         
-        #if len(Directories().uncompressed_list) != len(uncompressed_listbox.get(0, END)):
-        #    uncompressed_listbox.delete(0, END)
-        #    for i in Directories().uncompressed_list:
-        #        uncompressed_listbox.insert(END, f" {i}")
-        #    uncompressed_label.configure(text=que_text2, fg=red)
-        #    if len(Directories().uncompressed_list) == 0:
-        #        uncompressed_label.configure(text=uncompressed_text2, fg=green)
-                
+        
+        completed_status.place(x=0, y=0)
+        completed_status_instructions.place(x=0, y=31)
+        compressed_dir_listbox.place(x=1, y=91)
+
+        def refresh():
+            while True:
+                if len(Directories().compressed_list) != len(compressed_dir_listbox.get(0, END)):
+                    compressed_dir_listbox.delete(0, END)
+                    for i in Directories().compressed_list:
+                        compressed_dir_listbox.insert(END, f" {i}")
+                time.sleep(5)
+        threading.Thread(target=refresh).start()
+        
+
+    def plex_ui():
+        plex_label1 = Label(
+            ui_frame_right, 
+            text="Movie Collection:",  # Text displayed on the label
+            bg=background1,  # Background color of the label
+            fg=green,  # Color of the text on the label
+            width=0,  # Width of the label
+            font=("Comic Sans MS", 15, "bold")  # Font and size of the text on the label
+        )
+        plex_label2 = Label(
+            ui_frame_right, 
+            text=instructions2,  # Text displayed on the label
+            width=0,  # Width of the label
+            bg=background1,  # Background color of the label
+            fg=pink,  # Color of the text on the label
+            font=("Comic Sans MS", 11, "bold")  # Font and size of the text on the label
+        )
+        plex_listbox = Listbox(
+            ui_frame_right,
+            bg=background2,  # Background color of the listbox
+            fg=green,  # Color of the text in the listbox
+            width=47,  # Width of the listbox
+            height=18,  # Height of the listbox
+            bd=0,  # Border size of the listbox
+            font=("Comic Sans MS", 11, "bold")  # Font and size of the text in the listbox
+            )
+
+        plex_label1.place(x=0, y=345)
+        plex_label2.place(x=0, y=375)
+        plex_listbox.place(x=1, y=446)
+        
+        
         for letter in os.listdir(Directories().plex):
             for movie in os.listdir(f"{Directories().plex}/{letter}"):
                 if movie not in collection:
@@ -801,6 +802,12 @@ def refresh():
                 for movie in os.listdir(f"{Directories().plex}/{letter}"):
                     if movie not in plex_listbox.get(0, END):
                         plex_listbox.insert(END, f" {movie}")
+    
+    
+    compressed_ui()
+    plex_ui()
+right_frame_ui()
 
-#threading.Thread(target=refresh).start()
+threading.Thread(target=rip_movie).start()
+threading.Thread(target=transcode_movie).start()
 root.mainloop()
