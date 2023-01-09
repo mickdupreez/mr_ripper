@@ -407,6 +407,8 @@ class Movie:
                     drives.append(self.drive_letter)
                     self.uncompressed_file = uncompressed_file
                     ctypes.windll.WINMM.mciSendStringW(u"set cdaudio door open", None, 0, None)
+                    time.sleep(2)
+                    shutil.move(f"{Directories().temp}{self.title}", Directories().uncompressed)
         except Exception as e:
             print("An error occurred while looking for the ripped file, please try again.")
             uncompressed_file = None
@@ -452,9 +454,9 @@ def transcode_movie():
         dir_location = f"{Directories().uncompressed}{title}"
         output_directory_size = sum(os.path.getsize(os.path.join(dir_location, f)) for f in os.listdir(dir_location))
         output_directory_size_gb = output_directory_size / (1024 ** 3)
-        if output_directory_size_gb < 20:
+        if output_directory_size_gb > 20:
             dir_destination =  f"{Directories().transcoding}"
-            if len(Directories().transcoding_list) <= 1:
+            if len(Directories().transcoding_list) <= 2:
                 shutil.move(dir_location, dir_destination)
                 threading.Thread(target=transcode).start()
             else:
