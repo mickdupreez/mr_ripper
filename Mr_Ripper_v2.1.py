@@ -202,10 +202,9 @@ def terminal_ui(stdscr):
         uncompressed_box()
         stdscr.refresh()
 
-def show_terminal():
-    curses.wrapper(terminal_ui)
 
-threading.Thread(target=show_terminal).start()
+
+#threading.Thread(target=curses.wrapper(terminal_ui)).start()
 
 
 
@@ -371,8 +370,12 @@ class Movie:
                 if movie_poster == None:
                     movie_poster = Im.open("default.png")
                     movie_poster.save(f"{output_directory}/{movie_title}.png")
+                    self.output_directory = output_directory
+
                 else:
                     movie_poster.save(f"{output_directory}/{movie_title}.png")
+                    self.output_directory = output_directory
+
             else:
                 print("An error occurred while creating the output directory for this DVD, please try again.")
                 drives.append(self.drive_letter)
@@ -388,7 +391,6 @@ class Movie:
         self.link = link
         self.title = movie_title
         self.poster = movie_poster
-        self.output_directory = output_directory
 
     def Rip(self):
         try:
@@ -422,8 +424,7 @@ def rip_movie():
         DVDDRIVE.Rip()
         TITLE = DVDDRIVE.title
         POSTER = DVDDRIVE.poster
-        OUTPUTDIR = DVDDRIVE.output_directory
-        return DVDDRIVE, TITLE, POSTER, OUTPUTDIR
+        return DVDDRIVE, TITLE, POSTER
     else:
         time.sleep(10)
 
@@ -472,7 +473,7 @@ def transcode_movie():
 def rip_and_transcode():
     time.sleep(5)
     threading.Thread(target=rip_movie).start()
-    threading.Thread(target=transcode_movie).start()
+    #threading.Thread(target=transcode_movie).start()
 
 
 
@@ -810,6 +811,5 @@ def right_frame_ui():
     plex_ui()
 right_frame_ui()
 
-threading.Thread(target=rip_movie).start()
-threading.Thread(target=transcode_movie).start()
+threading.Thread(target=rip_and_transcode).start()
 root.mainloop()
