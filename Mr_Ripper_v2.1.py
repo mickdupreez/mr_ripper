@@ -74,151 +74,126 @@ class Directories:
             else: # Skip if directory exists
                 pass
 
-
-
-
-
-
-
-
-def terminal_ui(stdscr):
-    curses.init_pair(1, curses.COLOR_RED, curses.COLOR_BLACK)
-    curses.init_pair(2, curses.COLOR_GREEN, curses.COLOR_BLACK)
-    curses.init_pair(3, curses.COLOR_YELLOW, curses.COLOR_BLACK)
-    curses.init_pair(4, curses.COLOR_BLUE, curses.COLOR_BLACK)
-    curses.init_pair(5, curses.COLOR_MAGENTA, curses.COLOR_BLACK)
-    curses.init_pair(6, curses.COLOR_CYAN, curses.COLOR_BLACK)
-    curses.init_pair(7, curses.COLOR_WHITE, curses.COLOR_BLACK)
-    curses.init_pair(8, curses.COLOR_BLACK, curses.COLOR_BLACK)
-    RED = curses.color_pair(1)
-    GREEN = curses.color_pair(2)
-    YELLOW = curses.color_pair(3)
-    BLUE = curses.color_pair(4)
-    MAGENTA = curses.color_pair(5)
-    CYAN = curses.color_pair(6)
-    WHITE = curses.color_pair(7)
-    BLACK = curses.color_pair(8)
-
-    def main_box():
-        stdscr.addstr(1, 1, "Mr Ripper 2.1.1 https://github.com/mickdupreez/mr_ripper|", BLUE | curses.A_BOLD)
-        if Directories().temp_list == [] and Directories().transcoding_list != []:
-            stdscr.addstr(1, 65, "!!! TRANSCODING IN PROGRES PLEASE WAIT !!!", RED | curses.A_BOLD)
-        if Directories().temp_list != [] and Directories().transcoding_list == []:
-            stdscr.addstr(1, 68, "!!! RIPPING IN PROGRES PLEASE WAIT !!!", RED | curses.A_BOLD)
-        if Directories().temp_list != [] and Directories().transcoding_list != []:
-            stdscr.addstr(1, 62, "!!! RIP AND TRANSCODE IN PROGRESS PLEASE WAIT !!!", RED | curses.A_BOLD)
-        if Directories().temp_list == [] and Directories().transcoding_list == []:
-            stdscr.addstr(1, 65, "!!! INSERT A DVD OR BLURAY TO GET STARTED !!!", GREEN | curses.A_BOLD)
-        rectangle(stdscr, 0, 0, 28, 115)
-    
-    def get_directory_size(path):
-        total_size = 0
-        for dirpath, dirnames, filenames in os.walk(path):
-            for f in filenames:
-                fp = os.path.join(dirpath, f)
-                total_size += os.path.getsize(fp)
-        if total_size < 1024:
-            return f"{total_size} B"
-        elif total_size < 1024**2:
-            return f"{total_size/1024:.2f} KB"
-        elif total_size < 1024**3:
-            return f"{total_size/1024**2:.2f} MB"
-        else:
-            return f"{total_size/1024**3:.2f} GB"
-
-    def get_storage_size(file_path):
-        total, used, free = shutil.disk_usage(os.path.dirname(os.path.abspath(file_path)))
-        total = total // (1024 ** 3)
-        total = f"{total} GB"
-        used = used // (1024 ** 3)
-        used = f"{used} GB"
-        free = free // (1024 ** 3)
-        free = f"{free} GB"
-        return total, used, free
-
-    def stats_box():
-        total, used, free, = get_storage_size('README.md')
-        stdscr.addstr(19, 12, "- Directory Sizes and stats -", BLUE | curses.A_BOLD)
-        stdscr.addstr(20, 2, f"Free space on Drive:      {free} out of {total}", GREEN | curses.A_BOLD)
-        stdscr.addstr(21, 2, f"Drive space used:         {get_directory_size('.')} out of {total}", GREEN | curses.A_BOLD)
-        stdscr.addstr(22, 2, f"Ripping Directory:        {get_directory_size(Directories().temp)} out of {get_directory_size('.')}", GREEN | curses.A_BOLD)
-        stdscr.addstr(23, 2, f"Uncompressed Directory:   {get_directory_size(Directories().uncompressed)} out of {get_directory_size('.')}", GREEN | curses.A_BOLD)
-        stdscr.addstr(24, 2, f"Transcoding Directory:    {get_directory_size(Directories().transcoding)} out of {get_directory_size('.')}", GREEN | curses.A_BOLD)
-        stdscr.addstr(25, 2, f"Compressed Directory:     {get_directory_size(Directories().compressed)} out of {get_directory_size('.')}", GREEN | curses.A_BOLD)
-        stdscr.addstr(26, 2, f"Plex Directory:           {get_directory_size(Directories().plex)} out of {get_directory_size('.')}", GREEN | curses.A_BOLD)
-        rectangle(stdscr, 18, 1, 27, 56)
-
-    
-    def temp_box():
-        stdscr.addstr(3, 14, "- Movies That Are Being Ripped -", MAGENTA | curses.A_BOLD)
-        stdscr.addstr(4, 27, get_directory_size('temp'), GREEN | curses.A_BOLD)
-        rectangle(stdscr, 5, 1, 9, 56)
-        rectangle(stdscr, 2, 1, 9, 56)
-        row = 5
-        col = 2
-        for i in Directories().temp_list:
-            word = i
-            row = row + 1
-            stdscr.addstr(row, col, word, RED | curses.A_BOLD)
-            
-    def transcoding_box():
-        stdscr.addstr(11, 14, "- Movies That Are Transcoding -", YELLOW | curses.A_BOLD)
-        stdscr.addstr(12, 27, get_directory_size(Directories().transcoding), GREEN | curses.A_BOLD)
-        rectangle(stdscr, 13, 1, 17, 56)
-        rectangle(stdscr, 10, 1, 17, 56)
-        row = 13
-        col = 2
-        for i in Directories().transcoding_list:
-            word = i
-            row = row + 1
-            stdscr.addstr(row, col, word, RED | curses.A_BOLD)
-
-    def uncompressed_box():
-        stdscr.addstr(3, 65, "- Movies That Are Queued For Transcoding -", CYAN | curses.A_BOLD)
-        stdscr.addstr(4, 83, get_directory_size(Directories().uncompressed), GREEN | curses.A_BOLD)
-        rectangle(stdscr, 5, 57, 27, 114)
-        rectangle(stdscr, 2, 57, 27, 114)
-        row = 5
-        col = 58
-        for i in Directories().uncompressed_list:
-            time.sleep(.1)
-            word = i
-            row = row + 1
-            stdscr.addstr(row, col, word, RED | curses.A_BOLD)
-
-    count = 0
-    while True:
-        time.sleep(0.6)
+def term_ui():
+    def terminal_ui(stdscr):
+        curses.init_pair(1, curses.COLOR_RED, curses.COLOR_BLACK)
+        curses.init_pair(2, curses.COLOR_GREEN, curses.COLOR_BLACK)
+        curses.init_pair(3, curses.COLOR_YELLOW, curses.COLOR_BLACK)
+        curses.init_pair(4, curses.COLOR_BLUE, curses.COLOR_BLACK)
+        curses.init_pair(5, curses.COLOR_MAGENTA, curses.COLOR_BLACK)
+        curses.init_pair(6, curses.COLOR_CYAN, curses.COLOR_BLACK)
+        curses.init_pair(7, curses.COLOR_WHITE, curses.COLOR_BLACK)
+        curses.init_pair(8, curses.COLOR_BLACK, curses.COLOR_BLACK)
         RED = curses.color_pair(1)
-        stdscr.clear()
-        count = count + 1
-        if count % 2 == 0:
-            RED = BLACK
+        GREEN = curses.color_pair(2)
+        YELLOW = curses.color_pair(3)
+        BLUE = curses.color_pair(4)
+        MAGENTA = curses.color_pair(5)
+        CYAN = curses.color_pair(6)
+        WHITE = curses.color_pair(7)
+        BLACK = curses.color_pair(8)
 
-        main_box()
-        temp_box()
-        transcoding_box()
-        stats_box()
-        uncompressed_box()
-        stdscr.refresh()
+        def main_box():
+            stdscr.addstr(1, 1, "Mr Ripper 2.1.1 https://github.com/mickdupreez/mr_ripper|", BLUE | curses.A_BOLD)
+            if Directories().temp_list == [] and Directories().transcoding_list != []:
+                stdscr.addstr(1, 65, "!!! TRANSCODING IN PROGRES PLEASE WAIT !!!", RED | curses.A_BOLD)
+            if Directories().temp_list != [] and Directories().transcoding_list == []:
+                stdscr.addstr(1, 68, "!!! RIPPING IN PROGRES PLEASE WAIT !!!", RED | curses.A_BOLD)
+            if Directories().temp_list != [] and Directories().transcoding_list != []:
+                stdscr.addstr(1, 62, "!!! RIP AND TRANSCODE IN PROGRESS PLEASE WAIT !!!", RED | curses.A_BOLD)
+            if Directories().temp_list == [] and Directories().transcoding_list == []:
+                stdscr.addstr(1, 65, "!!! INSERT A DVD OR BLURAY TO GET STARTED !!!", GREEN | curses.A_BOLD)
+            rectangle(stdscr, 0, 0, 28, 115)
 
+        def get_directory_size(path):
+            total_size = 0
+            for dirpath, dirnames, filenames in os.walk(path):
+                for f in filenames:
+                    fp = os.path.join(dirpath, f)
+                    total_size += os.path.getsize(fp)
+            if total_size < 1024:
+                return f"{total_size} B"
+            elif total_size < 1024**2:
+                return f"{total_size/1024:.2f} KB"
+            elif total_size < 1024**3:
+                return f"{total_size/1024**2:.2f} MB"
+            else:
+                return f"{total_size/1024**3:.2f} GB"
 
+        def get_storage_size(file_path):
+            total, used, free = shutil.disk_usage(os.path.dirname(os.path.abspath(file_path)))
+            total = total // (1024 ** 3)
+            total = f"{total} GB"
+            used = used // (1024 ** 3)
+            used = f"{used} GB"
+            free = free // (1024 ** 3)
+            free = f"{free} GB"
+            return total, used, free
 
-#threading.Thread(target=curses.wrapper(terminal_ui)).start()
+        def stats_box():
+            total, used, free, = get_storage_size('README.md')
+            stdscr.addstr(19, 12, "- Directory Sizes and stats -", BLUE | curses.A_BOLD)
+            stdscr.addstr(20, 2, f"Free space on Drive:      {free} out of {total}", GREEN | curses.A_BOLD)
+            stdscr.addstr(21, 2, f"Drive space used:         {get_directory_size('.')} out of {total}", GREEN | curses.A_BOLD)
+            stdscr.addstr(22, 2, f"Ripping Directory:        {get_directory_size(Directories().temp)} out of {get_directory_size('.')}", GREEN | curses.A_BOLD)
+            stdscr.addstr(23, 2, f"Uncompressed Directory:   {get_directory_size(Directories().uncompressed)} out of {get_directory_size('.')}", GREEN | curses.A_BOLD)
+            stdscr.addstr(24, 2, f"Transcoding Directory:    {get_directory_size(Directories().transcoding)} out of {get_directory_size('.')}", GREEN | curses.A_BOLD)
+            stdscr.addstr(25, 2, f"Compressed Directory:     {get_directory_size(Directories().compressed)} out of {get_directory_size('.')}", GREEN | curses.A_BOLD)
+            stdscr.addstr(26, 2, f"Plex Directory:           {get_directory_size(Directories().plex)} out of {get_directory_size('.')}", GREEN | curses.A_BOLD)
+            rectangle(stdscr, 18, 1, 27, 56)
 
+        def temp_box():
+            stdscr.addstr(3, 14, "- Movies That Are Being Ripped -", MAGENTA | curses.A_BOLD)
+            stdscr.addstr(4, 27, get_directory_size('temp'), GREEN | curses.A_BOLD)
+            rectangle(stdscr, 5, 1, 9, 56)
+            rectangle(stdscr, 2, 1, 9, 56)
+            row = 5
+            col = 2
+            for i in Directories().temp_list:
+                word = i
+                row = row + 1
+                stdscr.addstr(row, col, word, RED | curses.A_BOLD)
 
+        def transcoding_box():
+            stdscr.addstr(11, 14, "- Movies That Are Transcoding -", YELLOW | curses.A_BOLD)
+            stdscr.addstr(12, 27, get_directory_size(Directories().transcoding), GREEN | curses.A_BOLD)
+            rectangle(stdscr, 13, 1, 17, 56)
+            rectangle(stdscr, 10, 1, 17, 56)
+            row = 13
+            col = 2
+            for i in Directories().transcoding_list:
+                word = i
+                row = row + 1
+                stdscr.addstr(row, col, word, RED | curses.A_BOLD)
 
+        def uncompressed_box():
+            stdscr.addstr(3, 65, "- Movies That Are Queued For Transcoding -", CYAN | curses.A_BOLD)
+            stdscr.addstr(4, 83, get_directory_size(Directories().uncompressed), GREEN | curses.A_BOLD)
+            rectangle(stdscr, 5, 57, 27, 114)
+            rectangle(stdscr, 2, 57, 27, 114)
+            row = 5
+            col = 58
+            for i in Directories().uncompressed_list:
+                time.sleep(.1)
+                word = i
+                row = row + 1
+                stdscr.addstr(row, col, word, RED | curses.A_BOLD)
 
-
-
-
-
-
-
-
-
-
-
+        count = 0
+        while True:
+            time.sleep(0.6)
+            RED = curses.color_pair(1)
+            stdscr.clear()
+            count = count + 1
+            if count % 2 == 0:
+                RED = BLACK
+            main_box()
+            temp_box()
+            transcoding_box()
+            stats_box()
+            uncompressed_box()
+            stdscr.refresh()
+    curses.wrapper(terminal_ui)
 
 class Movie:
     def __init__(self):
@@ -229,162 +204,159 @@ class Movie:
         dvd_drives.remove(drive_letter)
 
     def Scrape(self):
-        try:
-            if self.drive_letter != None:
+        if self.drive_letter != None:
+            try:
                 volume_info = win32api.GetVolumeInformation(self.drive_letter[:-1])
                 volume_info = volume_info[0]
                 volume_info = volume_info.replace("_", " ")
                 disc_information = MakeMKV(self.drive_letter[:-1]).info()
                 disc_info = disc_information["disc"]["name"]
                 disc_info = disc_info.replace("_", " ")
+                volume_info = re.sub(r'(?<!\b\d{4})(?<!\b\d)\b\d+\b(?!\d\b)', '', volume_info)
+                volume_info = re.sub(r'[^A-Za-z0-9\s]', '', volume_info).strip().lower()
+                disc_info = re.sub(r'(?<!\b\d{4})(?<!\b\d)\b\d+\b(?!\d\b)', '', disc_info)
+                disc_info = re.sub(r'[^A-Za-z0-9\s]', '', disc_info).strip().lower()
                 try:
-                    volume_info = re.sub(r'(?<!\b\d{4})(?<!\b\d)\b\d+\b(?!\d\b)', '', volume_info)
-                    volume_info = re.sub(r'[^A-Za-z0-9\s]', '', volume_info).strip().lower()
-                    disc_info = re.sub(r'(?<!\b\d{4})(?<!\b\d)\b\d+\b(?!\d\b)', '', disc_info)
-                    disc_info = re.sub(r'[^A-Za-z0-9\s]', '', disc_info).strip().lower()
+                    possible_title = "movie_titles.txt"
+                    with codecs.open(possible_title, 'r', encoding='utf-8') as file:
+                        lines = file.readlines()
+                        items = []
+                        for line in lines:
+                            line_items = line.split(',')
+                            items.extend(line_items)
+                        items = [re.sub(r'[^A-Za-z0-9\s]', '', item) for item in items]
+                        items = [item.strip() for item in items]
+                        items = items
+                        
+                    volume_info_match = None
+                    volume_info_percent_max = 0
+                    for item in items:
+                        volume_info_percent = difflib.SequenceMatcher(None, volume_info, item).ratio()
+                        if volume_info_percent > volume_info_percent_max:
+                            volume_info_percent_max = volume_info_percent
+                            volume_info_match = item
+                            
+                    disc_info_match = None
+                    disc_info_percent_max = 0
+                    for item in items:
+                        disc_info_percent = difflib.SequenceMatcher(None, disc_info, item).ratio()
+                        if disc_info_percent > disc_info_percent_max:
+                            disc_info_percent_max = volume_info_percent
+                            disc_info_match = item
+                                    
+                    if disc_info_percent_max < 0.55 and volume_info_percent_max < 0.55:
+                        print("There are no matches, using the 'volume_info' as the string to search for.")
+                        time.sleep(3)
+                        best_match = volume_info
+                    else:
+                        if disc_info_percent_max > volume_info_percent_max:
+                            print("best_match = disc_info_percent_max")
+                            best_match = disc_info_match
+                        else:
+                            print("best_match = volume_info_percent_max")
+                            best_match = volume_info_match
+                            
+                            
                 except Exception as e:
-                    print(f"An error occurred while preprocessing the string :{volume_info} or {disc_info}:: {e}")
-            else:
+                    best_match = volume_info
+                    print("An error occurred while looking for a match, please try again.")
+                try:
+                    if best_match != None:
+                        query = best_match.replace(" ", "+")
+                        url = f"https://www.google.com/search?q={query}+site:imdb.com"
+                        headers = {
+                            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36"
+                        }
+                        response = requests.get(url, headers=headers)
+                        soup = BeautifulSoup(response.text, "html.parser")
+                        links = []
+                        for a in soup.find_all("a", href=True):
+                            if a["href"].startswith("https://www.imdb.com/title/tt") and re.match(r"\d+/$", a["href"][-6:]):
+                                links.append(a["href"])
+                                link = links[:1]
+                                link = link[0]
+                    else:
+                        print("An error occurred, you dont have any Title matches. Please try later.")
+                        link = None
+                    if link != None:
+                        movie_imdb_link = link
+                        user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36"
+                        options = webdriver.ChromeOptions()
+                        options.headless = True  # Run the browser in headless mode (without a GUI)
+                        options.add_argument("--silent")  # Suppress logging
+                        options.add_argument(f'user-agent={user_agent}')  # Set the user agent
+                        options.add_argument("--window-size=1920,1080")  # Set the window size
+                        options.add_argument('--ignore-certificate-errors')  # Ignore SSL errors
+                        options.add_argument('--allow-running-insecure-content')  # Allow running insecure content
+                        options.add_argument("--disable-extensions")  # Disable extensions
+                        options.add_argument("--proxy-server='direct://'")  # Set the proxy server
+                        options.add_argument("--proxy-bypass-list=*")  # Set the proxy bypass list
+                        options.add_argument("--start-maximized")  # Start the browser maximized
+                        options.add_argument('--disable-gpu')  # Disable GPU acceleration
+                        options.add_argument('--disable-dev-shm-usage')  # Disable shared memory
+                        options.add_argument('--no-sandbox')  # Disable the sandbox
+                        browser = webdriver.Chrome(executable_path="chromedriver.exe", options=options)
+                        browser.get(movie_imdb_link)
+                        movie_title = (browser.title.replace(") - IMDb", "").replace("(","").replace(":", ""))
+                        browser.find_element(By.CLASS_NAME, "ipc-lockup-overlay__screen").click()
+                        pattern = re.compile(r'<img src="https://m\.media-amazon\.com/images/.+"')
+                        matches = pattern.findall(browser.page_source)
+                        matches = str(matches[0]).split(",")
+                        matches = matches[0].split('"')
+                        for match in matches:
+                            if match.startswith("https") and match.endswith("jpg"):
+                                poster_link = match
+                                urllib.request.urlretrieve(poster_link, "temp.jpg")
+                                poster = Im.open("temp.jpg")
+                                poster_hight = 900
+                                hight_percent = (poster_hight / float(poster.size[1]))
+                                poster_width = int((float(poster.size[0]) * float(hight_percent)))
+                                poster = poster.resize((poster_width, poster_hight), Im.Resampling.LANCZOS)
+                                movie_poster = poster
+                                os.remove("temp.jpg")
+                                browser.quit()
+                    else:
+                        print(f"An error occurred while getting the link, try again later")
+                        movie_title = best_match
+                        movie_poster = Im.open("default.png")
+                except Exception as e:
+                    movie_title = best_match
+                    movie_poster = Im.open("default.png")
+                    print("An error occurred while scraping the web, please try again later")
+                try:
+                    if movie_title != None:
+                        output_directory = f"{Directories().temp}{movie_title}/"
+                        os.makedirs(output_directory, exist_ok=True)
+                        if movie_poster == None:
+                            movie_poster = Im.open("default.png")
+                            movie_poster.save(f"{output_directory}/{movie_title}.png")
+                            self.output_directory = output_directory
+                        else:
+                            movie_poster.save(f"{output_directory}/{movie_title}.png")
+                            self.output_directory = output_directory
+                except Exception as e:
+                        print("An error occurred while creating the output directory for this DVD, please try again.")
+                        drives.append(self.drive_letter)
+                        ctypes.windll.WINMM.mciSendStringW(u"set cdaudio door open", None, 0, None)
+            except Exception as e:
+                dvd_drives.append(self.drive_letter)
+                ctypes.windll.WINMM.mciSendStringW(u"set cdaudio door open", None, 0, None)
+                print("An error occurred while reading the DVD, Please make sure you have a DVD Inserted")
                 volume_info = None
                 disc_info = None
-                print("ERROR, The 'drive_letter' is None. Please connect a DVD Drive to your PC.")
-        except Exception as e:
+                best_match = None
+                link = None
+                movie_title = None
+                movie_poster = None
+        else:
             volume_info = None
             disc_info = None
-            print(f"An error has occurred, Cant gather volume information: {e}")
-        try:
-            possible_title = "movie_titles.txt"
-            with codecs.open(possible_title, 'r', encoding='utf-8') as file:
-                lines = file.readlines()
-                items = []
-                for line in lines:
-                    line_items = line.split(',')
-                    items.extend(line_items)
-                items = [re.sub(r'[^A-Za-z0-9\s]', '', item) for item in items]
-                items = [item.strip() for item in items]
-                items = items
-        except Exception as e:
-            items = None
-            print(f"An error occurred while reading the {possible_title} file: {e}")
-        try:
-            volume_info_match = None
-            volume_info_percent_max = 0
-            for item in items:
-                volume_info_percent = difflib.SequenceMatcher(None, volume_info, item).ratio()
-                if volume_info_percent > volume_info_percent_max:
-                    volume_info_percent_max = volume_info_percent
-                    volume_info_match = item
-            disc_info_match = None
-            disc_info_percent_max = 0
-            for item in items:
-                disc_info_percent = difflib.SequenceMatcher(None, disc_info, item).ratio()
-                if disc_info_percent > disc_info_percent_max:
-                    disc_info_percent_max = volume_info_percent
-                    disc_info_match = item                
-            if disc_info_percent_max < 0.55 and volume_info_percent_max < 0.55:
-                print("There are no matches, using the 'volume_info' as the string to search for.")
-                time.sleep(3)
-                best_match = volume_info
-            else:
-                if disc_info_percent_max > volume_info_percent_max:
-                    print("best_match = disc_info_percent_max")
-                    best_match = disc_info_match
-                else:
-                    print("best_match = volume_info_percent_max")
-                    best_match = volume_info_match
-        except Exception as e:
-            print(f"An unexpected error occurred, using the 'volume_info' as the string to search for. Please try again later : {e}")
-            best_match = volume_info
-        try:
-            if best_match != None:
-                query = best_match.replace(" ", "+")
-                url = f"https://www.google.com/search?q={query}+site:imdb.com"
-                headers = {
-                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36"
-                }
-                response = requests.get(url, headers=headers)
-                soup = BeautifulSoup(response.text, "html.parser")
-                links = []
-                for a in soup.find_all("a", href=True):
-                    if a["href"].startswith("https://www.imdb.com/title/tt") and re.match(r"\d+/$", a["href"][-6:]):
-                        links.append(a["href"])
-                        link = links[:1]
-                        link = link[0]
-            else:
-                print("An error occurred, you dont have any Title matches. Please try later.")
-                link = None
-        except Exception as e:
-            print(f"An unexpected error occurred: {e}")
+            best_match = None
             link = None
-        try:
-            if link != None:
-                movie_imdb_link = link
-                user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36"
-                options = webdriver.ChromeOptions()
-                options.headless = True  # Run the browser in headless mode (without a GUI)
-                options.add_argument("--silent")  # Suppress logging
-                options.add_argument(f'user-agent={user_agent}')  # Set the user agent
-                options.add_argument("--window-size=1920,1080")  # Set the window size
-                options.add_argument('--ignore-certificate-errors')  # Ignore SSL errors
-                options.add_argument('--allow-running-insecure-content')  # Allow running insecure content
-                options.add_argument("--disable-extensions")  # Disable extensions
-                options.add_argument("--proxy-server='direct://'")  # Set the proxy server
-                options.add_argument("--proxy-bypass-list=*")  # Set the proxy bypass list
-                options.add_argument("--start-maximized")  # Start the browser maximized
-                options.add_argument('--disable-gpu')  # Disable GPU acceleration
-                options.add_argument('--disable-dev-shm-usage')  # Disable shared memory
-                options.add_argument('--no-sandbox')  # Disable the sandbox
-                browser = webdriver.Chrome(executable_path="chromedriver.exe", options=options)
-                browser.get(movie_imdb_link)
-                movie_title = (browser.title.replace(") - IMDb", "").replace("(","").replace(":", ""))
-                browser.find_element(By.CLASS_NAME, "ipc-lockup-overlay__screen").click()
-                pattern = re.compile(r'<img src="https://m\.media-amazon\.com/images/.+"')
-                matches = pattern.findall(browser.page_source)
-                matches = str(matches[0]).split(",")
-                matches = matches[0].split('"')
-                for match in matches:
-                    if match.startswith("https") and match.endswith("jpg"):
-                        poster_link = match
-                        urllib.request.urlretrieve(poster_link, "temp.jpg")
-                        poster = Im.open("temp.jpg")
-                        poster_hight = 900
-                        hight_percent = (poster_hight / float(poster.size[1]))
-                        poster_width = int((float(poster.size[0]) * float(hight_percent)))
-                        poster = poster.resize((poster_width, poster_hight), Im.Resampling.LANCZOS)
-                        movie_poster = poster
-                        os.remove("temp.jpg")
-                        browser.quit()
-            else:
-                print(f"An error occurred while getting the link, try again later")
-                movie_title = best_match
-                
-                movie_poster = Im.open("default.png")
-        except Exception as e:
-            print(f"An error occurred while downloading the movie data from the web, try again later : {e}")
-            movie_title = best_match
-            movie_poster = Im.open("default.png")
-        try:
-            if movie_title != None:
-                output_directory = f"{Directories().temp}{movie_title}/"
-                os.makedirs(output_directory, exist_ok=True)
-                if movie_poster == None:
-                    movie_poster = Im.open("default.png")
-                    movie_poster.save(f"{output_directory}/{movie_title}.png")
-                    self.output_directory = output_directory
-
-                else:
-                    movie_poster.save(f"{output_directory}/{movie_title}.png")
-                    self.output_directory = output_directory
-
-            else:
-                print("An error occurred while creating the output directory for this DVD, please try again.")
-                drives.append(self.drive_letter)
-                ctypes.windll.WINMM.mciSendStringW(u"set cdaudio door open", None, 0, None)
-                
-        except Exception as e:
-            print("An error occurred while creating the output directory for this DVD, please try again.")
-            shutil.rmtree(f"{Directories().temp}{movie_title}")
-
+            movie_title = None
+            movie_poster = None
+            print("ERROR, The 'drive_letter' is None. Please connect a DVD Drive to your PC.")
+        
         self.volume_info = volume_info
         self.disc_info = disc_info
         self.best_match = best_match
@@ -392,43 +364,42 @@ class Movie:
         self.title = movie_title
         self.poster = movie_poster
 
+
+
     def Rip(self):
         try:
             makemkv = MakeMKV(self.drive_number)
             makemkv.mkv(self.drive_number, self.output_directory)
-        except:
+            try:
+                for file in os.listdir(f"{Directories().temp}{self.title}"):
+                    if file.endswith(".mkv"):
+                        uncompressed_file = file
+                        dvd_drives.append(self.drive_letter)
+                        self.uncompressed_file = uncompressed_file
+                        ctypes.windll.WINMM.mciSendStringW(u"set cdaudio door open", None, 0, None)
+                        shutil.move(f"{Directories().temp}{self.title}", Directories().uncompressed)
+                        time.sleep(2)
+                        dvd_drives.append(self.drive_letter)
+            except Exception as e:
+                print("An error occurred while looking for the ripped file, please try again.")
+                uncompressed_file = None
+        except Exception as e:
             print("An error occurred while ripping this DVD, please try again.")
             uncompressed_file = None
-            drives.append(self.drive_letter)
             ctypes.windll.WINMM.mciSendStringW(u"set cdaudio door open", None, 0, None)
-        try:
-            for file in os.listdir(f"{Directories().temp}{self.title}"):
-                if file.endswith(".mkv"):
-                    uncompressed_file = file
-                    print(f"Here is the output directory : {uncompressed_file}")
-                    drives.append(self.drive_letter)
-                    self.uncompressed_file = uncompressed_file
-                    ctypes.windll.WINMM.mciSendStringW(u"set cdaudio door open", None, 0, None)
-                    time.sleep(2)
-                    shutil.move(f"{Directories().temp}{self.title}", Directories().uncompressed)
-        except Exception as e:
-            print("An error occurred while looking for the ripped file, please try again.")
-            uncompressed_file = None
+            dvd_drives.append(self.drive_letter)
 
 def rip_movie():
     if dvd_drives != []:
-        print(dvd_drives)
         time.sleep(1)
         DVDDRIVE = Movie()
         DVDDRIVE.Scrape()
         DVDDRIVE.Rip()
-        TITLE = DVDDRIVE.title
-        POSTER = DVDDRIVE.poster
-        return DVDDRIVE, TITLE, POSTER
     else:
         time.sleep(10)
 
 def transcode_movie():
+    
     if Directories().uncompressed_list != []:
         def transcode():
             for dir in Directories().transcoding_list:
@@ -437,7 +408,7 @@ def transcode_movie():
                 for file in os.listdir(f"{Directories().transcoding}{target_dir}"):
                     print(file)
                     if file.endswith(".mkv"):
-                        input_file = file
+                        input_file = f"{Directories().transcoding}{target_dir}/{file}"
                         output_file = f"{Directories().transcoding}{target_dir}/{target_dir}.mkv"
                         command  = [
                             "HandBrakeCLI.exe", "--preset-import-file", "profile.json", "-Z", "PLEX",
@@ -447,21 +418,21 @@ def transcode_movie():
                         print(input_file, output_file)
                         subprocess.run(command, shell=True)
                         time.sleep(3)
-                        os.remove(f"{Directories().transcoding}{target_dir}/{input_file}")
+                        os.remove(f"{input_file}")
                         time.sleep(1)
                         shutil.move(f"{Directories().transcoding}{target_dir}", f"{Directories().compressed}")
                         time.sleep(1)
+                        
         title = Directories().uncompressed_list[0]
         dir_location = f"{Directories().uncompressed}{title}"
         output_directory_size = sum(os.path.getsize(os.path.join(dir_location, f)) for f in os.listdir(dir_location))
         output_directory_size_gb = output_directory_size / (1024 ** 3)
+        
         if output_directory_size_gb > 20:
             dir_destination =  f"{Directories().transcoding}"
             if len(Directories().transcoding_list) <= 2:
                 shutil.move(dir_location, dir_destination)
                 threading.Thread(target=transcode).start()
-            else:
-                pass
         else:
             dir_destination = f"{Directories().compressed}"
             for file in os.listdir(f"{Directories().uncompressed}{title}"):
@@ -470,20 +441,12 @@ def transcode_movie():
                     shutil.move(dir_location, dir_destination)
     else:
         time.sleep(5)
+
 def rip_and_transcode():
-    time.sleep(5)
-    threading.Thread(target=rip_movie).start()
-    #threading.Thread(target=transcode_movie).start()
-
-
-
-
-
-
-
-
-
-
+    while True:
+        time.sleep(5)
+        threading.Thread(target=rip_movie).start()
+        threading.Thread(target=transcode_movie).start()
 
 root = Tk()
 root.title("https://github.com/mickdupreez/mr_ripper")
@@ -810,6 +773,7 @@ def right_frame_ui():
     compressed_ui()
     plex_ui()
 right_frame_ui()
-
 threading.Thread(target=rip_and_transcode).start()
+threading.Thread(target=term_ui).start()
 root.mainloop()
+
