@@ -2,7 +2,6 @@ import os
 import re
 import time
 import curses
-import emoji
 import ctypes
 import shutil
 import codecs
@@ -181,7 +180,7 @@ def term_ui():
 
         count = 0
         while True:
-            time.sleep(0.6)
+            time.sleep(0.3)
             RED = curses.color_pair(1)
             stdscr.clear()
             count = count + 1
@@ -203,6 +202,9 @@ class Movie:
         self.drive_number = drive_number
         dvd_drives.remove(drive_letter)
 
+        self.Scrape()
+        self.Rip()
+
     def Scrape(self):
         if self.drive_letter != None:
             try:
@@ -212,10 +214,12 @@ class Movie:
                 disc_information = MakeMKV(self.drive_letter[:-1]).info()
                 disc_info = disc_information["disc"]["name"]
                 disc_info = disc_info.replace("_", " ")
-                volume_info = re.sub(r'(?<!\b\d{4})(?<!\b\d)\b\d+\b(?!\d\b)', '', volume_info)
                 volume_info = re.sub(r'[^A-Za-z0-9\s]', '', volume_info).strip().lower()
-                disc_info = re.sub(r'(?<!\b\d{4})(?<!\b\d)\b\d+\b(?!\d\b)', '', disc_info)
                 disc_info = re.sub(r'[^A-Za-z0-9\s]', '', disc_info).strip().lower()
+                print(disc_info)
+                print(volume_info)
+                
+                
                 try:
                     possible_title = "movie_titles.txt"
                     with codecs.open(possible_title, 'r', encoding='utf-8') as file:
@@ -224,42 +228,49 @@ class Movie:
                         for line in lines:
                             line_items = line.split(',')
                             items.extend(line_items)
+                        #items = [re.sub(r'(?<!\b\d{4})(?<!\b\d)\b\d+\b(?!\d\b)', '', item) for item in items]
                         items = [re.sub(r'[^A-Za-z0-9\s]', '', item) for item in items]
-                        items = [item.strip() for item in items]
+                        items = [item.strip().lower() for item in items]
                         items = items
-                        
-                    volume_info_match = None
-                    volume_info_percent_max = 0
-                    for item in items:
-                        volume_info_percent = difflib.SequenceMatcher(None, volume_info, item).ratio()
-                        if volume_info_percent > volume_info_percent_max:
-                            volume_info_percent_max = volume_info_percent
-                            volume_info_match = item
-                            
-                    disc_info_match = None
-                    disc_info_percent_max = 0
-                    for item in items:
-                        disc_info_percent = difflib.SequenceMatcher(None, disc_info, item).ratio()
-                        if disc_info_percent > disc_info_percent_max:
-                            disc_info_percent_max = volume_info_percent
-                            disc_info_match = item
-                                    
-                    if disc_info_percent_max < 0.55 and volume_info_percent_max < 0.55:
+                        print(items[0])
+
+                    volume_info_match = difflib.get_close_matches(volume_info, items, n=1, cutoff=0.2)
+                    print("\nVOLUME INFO.......................................")
+                    print(f"The Search term :{volume_info}")
+                    print(f"The Match Found in the list :{volume_info_match}")
+                    volume_info_percent = difflib.SequenceMatcher(None, volume_info, volume_info_match[0]).ratio()
+                    print(f"Confidence :{volume_info_percent}\n")
+
+                    disc_info_match = difflib.get_close_matches(disc_info, items, n=1, cutoff=0.2)
+                    print("DISC INFO.......................................")
+                    print(f"The Search term :{disc_info}")
+                    print(f"The Match Found in the list :{disc_info_match}")
+                    disc_info_percent = difflib.SequenceMatcher(None, disc_info, disc_info_match[0]).ratio()
+                    print(f"Confidence :{disc_info_percent}\n")
+                    disc_info_match = disc_info_match[0]
+                    volume_info_match = volume_info_match[0]                    
+                    if disc_info_percent < 0.40 and volume_info_percent < 0.40:
                         print("There are no matches, using the 'volume_info' as the string to search for.")
                         time.sleep(3)
                         best_match = volume_info
                     else:
-                        if disc_info_percent_max > volume_info_percent_max:
-                            print("best_match = disc_info_percent_max")
-                            best_match = disc_info_match
-                        else:
-                            print("best_match = volume_info_percent_max")
+                        if disc_info_percent == volume_info_percent:
+                            if len(disc_info_match) > len(volume_info_match):
+                                best_match = disc_info_match
+                            else:
+                                best_match = volume_info_match
+
+                        elif disc_info_percent < volume_info_percent:
                             best_match = volume_info_match
-                            
-                            
+                            print("BEST MATCH IS DISC INFO........................")
+                        else:
+                            best_match = disc_info_match
+                            print("BEST MATCH IS VOLUME INFO.......................")
+                    print(best_match)
                 except Exception as e:
                     best_match = volume_info
                     print("An error occurred while looking for a match, please try again.")
+
                 try:
                     if best_match != None:
                         query = best_match.replace(" ", "+")
@@ -282,7 +293,7 @@ class Movie:
                         movie_imdb_link = link
                         user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36"
                         options = webdriver.ChromeOptions()
-                        options.headless = True  # Run the browser in headless mode (without a GUI)
+                        options.headless = False  # Run the browser in headless mode (without a GUI)
                         options.add_argument("--silent")  # Suppress logging
                         options.add_argument(f'user-agent={user_agent}')  # Set the user agent
                         options.add_argument("--window-size=1920,1080")  # Set the window size
@@ -339,7 +350,8 @@ class Movie:
                         drives.append(self.drive_letter)
                         ctypes.windll.WINMM.mciSendStringW(u"set cdaudio door open", None, 0, None)
             except Exception as e:
-                dvd_drives.append(self.drive_letter)
+                if self.drive_letter not in dvd_drives:
+                    dvd_drives.append(self.drive_letter)
                 ctypes.windll.WINMM.mciSendStringW(u"set cdaudio door open", None, 0, None)
                 print("An error occurred while reading the DVD, Please make sure you have a DVD Inserted")
                 volume_info = None
@@ -374,32 +386,37 @@ class Movie:
                 for file in os.listdir(f"{Directories().temp}{self.title}"):
                     if file.endswith(".mkv"):
                         uncompressed_file = file
-                        dvd_drives.append(self.drive_letter)
-                        self.uncompressed_file = uncompressed_file
                         ctypes.windll.WINMM.mciSendStringW(u"set cdaudio door open", None, 0, None)
+                        if self.drive_letter not in dvd_drives:
+                            dvd_drives.append(self.drive_letter)
+                        self.uncompressed_file = uncompressed_file
+                        
                         shutil.move(f"{Directories().temp}{self.title}", Directories().uncompressed)
                         time.sleep(2)
-                        dvd_drives.append(self.drive_letter)
             except Exception as e:
+                if self.drive_letter not in dvd_drives:
+                    dvd_drives.append(self.drive_letter)
                 print("An error occurred while looking for the ripped file, please try again.")
                 uncompressed_file = None
         except Exception as e:
+            if self.drive_letter not in dvd_drives:
+                dvd_drives.append(self.drive_letter)
             print("An error occurred while ripping this DVD, please try again.")
             uncompressed_file = None
             ctypes.windll.WINMM.mciSendStringW(u"set cdaudio door open", None, 0, None)
-            dvd_drives.append(self.drive_letter)
 
 def rip_movie():
-    if dvd_drives != []:
-        time.sleep(1)
-        DVDDRIVE = Movie()
-        DVDDRIVE.Scrape()
-        DVDDRIVE.Rip()
-    else:
-        time.sleep(10)
+    while True:
+        print("here is the drives list")
+        time.sleep(5)
+        print(dvd_drives)
+        if dvd_drives != []:
+            Movie()
+        else:
+            time.sleep(15)
+            pass
 
 def transcode_movie():
-    
     if Directories().uncompressed_list != []:
         def transcode():
             for dir in Directories().transcoding_list:
@@ -432,7 +449,9 @@ def transcode_movie():
             dir_destination =  f"{Directories().transcoding}"
             if len(Directories().transcoding_list) <= 2:
                 shutil.move(dir_location, dir_destination)
-                threading.Thread(target=transcode).start()
+                T1 = threading.Thread(target=transcode)
+                T1.daemon = True
+                T1.start()
         else:
             dir_destination = f"{Directories().compressed}"
             for file in os.listdir(f"{Directories().uncompressed}{title}"):
@@ -442,11 +461,16 @@ def transcode_movie():
     else:
         time.sleep(5)
 
-def rip_and_transcode():
-    while True:
-        time.sleep(5)
-        threading.Thread(target=rip_movie).start()
-        threading.Thread(target=transcode_movie).start()
+T2 = threading.Thread(target=rip_movie)
+T2.daemon = True
+T2.start()
+T3 = threading.Thread(target=transcode_movie)
+T3.daemon = True
+T3.start()
+T9 = threading.Thread(target=term_ui)
+T9.daemon = True
+T9.start()
+
 
 root = Tk()
 root.title("https://github.com/mickdupreez/mr_ripper")
@@ -564,7 +588,10 @@ def left_frame_ui():
                             ripping_status2.config(text=ripping_label, fg=purple)
                             ripping_status1.config(text="Nothing is Ripping", fg=green)
                 time.sleep(5)
-        threading.Thread(target=refresh).start()
+        T4 = threading.Thread(target=refresh)
+        T4.daemon = True
+        T4.start()
+        
     
     ripping_ui()
     
@@ -615,7 +642,9 @@ def left_frame_ui():
                         uncompressed_label1.configure(text="Nothing in Que:", fg=green)
                         uncompressed_label2.configure(text=uncompressed_text1, fg=purple)
                 time.sleep(5)
-        threading.Thread(target=refresh).start()
+        T5 = threading.Thread(target=refresh)
+        T5.daemon = True
+        T5.start()
 
     uncompressed_ui()
 
@@ -664,7 +693,9 @@ def left_frame_ui():
                         transcoding_status2.config(text=transcoding_label1, fg=purple)
                         transcoding_status1.config(text="Nothing is Transcoding:", fg=green)
                 time.sleep(5)
-        threading.Thread(target=refresh).start()
+        T6 = threading.Thread(target=refresh)
+        T6.daemon = True
+        T6.start()
 
     transcoding_ui()
 left_frame_ui()
@@ -721,7 +752,9 @@ def right_frame_ui():
                     for i in Directories().compressed_list:
                         compressed_dir_listbox.insert(END, f" {i}")
                 time.sleep(5)
-        threading.Thread(target=refresh).start()
+        T7 = threading.Thread(target=refresh)
+        T7.daemon = True
+        T7.start()
         
 
     def plex_ui():
@@ -773,7 +806,7 @@ def right_frame_ui():
     compressed_ui()
     plex_ui()
 right_frame_ui()
-threading.Thread(target=rip_and_transcode).start()
-threading.Thread(target=term_ui).start()
-root.mainloop()
 
+
+
+root.mainloop()
