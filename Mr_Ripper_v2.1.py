@@ -64,14 +64,11 @@ class Directories:
         for directory in self.directories: # For each directory in the directories list
             if os.path.isdir(directory) != True: # If directory does not exist
                 os.mkdir(directory) # Create directory
-            else: # Skip if directory exists
-                pass
         for letter in ascii_uppercase: # For each letter in the ascii_uppercase string
             directory = self.plex + letter + '/' # Create the directory path
             if os.path.isdir(directory) != True: # If directory does not exist
                 os.mkdir(directory) # Create directory
-            else: # Skip if directory exists
-                pass
+
 
 def term_ui():
     def terminal_ui(stdscr):
@@ -211,11 +208,13 @@ class Movie:
                 volume_info = win32api.GetVolumeInformation(self.drive_letter[:-1])
                 volume_info = volume_info[0]
                 volume_info = volume_info.replace("_", " ")
+                volume_info = re.sub(r'[^A-Za-z0-9\s]', '', volume_info).strip().lower()
+                
                 disc_information = MakeMKV(self.drive_letter[:-1]).info()
                 disc_info = disc_information["disc"]["name"]
                 disc_info = disc_info.replace("_", " ")
-                volume_info = re.sub(r'[^A-Za-z0-9\s]', '', volume_info).strip().lower()
                 disc_info = re.sub(r'[^A-Za-z0-9\s]', '', disc_info).strip().lower()
+
                 print(disc_info)
                 print(volume_info)
                 
@@ -247,8 +246,10 @@ class Movie:
                     print(f"The Match Found in the list :{disc_info_match}")
                     disc_info_percent = difflib.SequenceMatcher(None, disc_info, disc_info_match[0]).ratio()
                     print(f"Confidence :{disc_info_percent}\n")
+                    
                     disc_info_match = disc_info_match[0]
-                    volume_info_match = volume_info_match[0]                    
+                    volume_info_match = volume_info_match[0]
+                                        
                     if disc_info_percent < 0.40 and volume_info_percent < 0.40:
                         print("There are no matches, using the 'volume_info' as the string to search for.")
                         time.sleep(3)
@@ -270,6 +271,14 @@ class Movie:
                 except Exception as e:
                     best_match = volume_info
                     print("An error occurred while looking for a match, please try again.")
+
+
+
+
+
+
+
+
 
                 try:
                     if best_match != None:
@@ -326,14 +335,25 @@ class Movie:
                                 movie_poster = poster
                                 os.remove("temp.jpg")
                                 browser.quit()
+
+
+
+
+
+
                     else:
                         print(f"An error occurred while getting the link, try again later")
                         movie_title = best_match
                         movie_poster = Im.open("default.png")
+
                 except Exception as e:
                     movie_title = best_match
                     movie_poster = Im.open("default.png")
                     print("An error occurred while scraping the web, please try again later")
+
+
+
+
                 try:
                     if movie_title != None:
                         output_directory = f"{Directories().temp}{movie_title}/"
@@ -349,6 +369,9 @@ class Movie:
                         print("An error occurred while creating the output directory for this DVD, please try again.")
                         drives.append(self.drive_letter)
                         ctypes.windll.WINMM.mciSendStringW(u"set cdaudio door open", None, 0, None)
+                        
+                        
+                        
             except Exception as e:
                 if self.drive_letter not in dvd_drives:
                     dvd_drives.append(self.drive_letter)

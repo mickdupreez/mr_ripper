@@ -1,0 +1,26 @@
+[(INFO)(17-Jan-23 00:04:19)(<module>)] MESSAGE : { .............STARTED : PRE-START CHECKS............. }
+[(INFO)(17-Jan-23 00:04:19)(<module>)] MESSAGE : { 'PASS' : Here is a list of all the attached DVD Drives'['E:\\'].' }
+[(INFO)(17-Jan-23 00:04:19)(<module>)] MESSAGE : { 'PASS' : All of the Directories needed exist. }
+[(INFO)(17-Jan-23 00:04:19)(<module>)] MESSAGE : { 'PASS' : All of the SUB Directories for your the 'COLLECTION_DIR' exist. }
+[(INFO)(17-Jan-23 00:04:19)(<module>)] MESSAGE : { .............FINISHED : PRE-START CHECKS............. }
+[(INFO)(17-Jan-23 00:04:19)(rip_dvd)] MESSAGE : { ..........................STARTED : SCRAPE ON DRIVE : 'E:\'.......................... }
+[(INFO)(17-Jan-23 00:04:19)(rip_dvd)] MESSAGE : { 'PASS' : Drive letter 'E:\', has been removed from Available DVD Drives: '[]'. Ready for RIPPING. }
+[(INFO)(17-Jan-23 00:04:19)(get_dvd_info)] MESSAGE : { 'PASS' : Used 'win32api.GetVolumeInformation' to get the 'VOLUME_INFO' from the DVD. 'VOLUME_INFO' = 'dvd video' }
+[(INFO)(17-Jan-23 00:04:19)(_run)] MESSAGE : { Running "makemkvcon info dev:E: --robot --progress=-same --noscan" }
+[(INFO)(17-Jan-23 00:04:20)(_run)] MESSAGE : { Scanning CD-ROM devices (5018) }
+[(INFO)(17-Jan-23 00:04:23)(_run)] MESSAGE : { Using direct disc access mode (3007) }
+[(INFO)(17-Jan-23 00:04:54)(_run)] MESSAGE : { Title #1 was added (28 cell(s), 1:59:49) (3028) }
+[(INFO)(17-Jan-23 00:04:54)(_run)] MESSAGE : { Title #2 has length of 148 seconds which is less than minimum title length of 3600 seconds and was therefore skipped (3025) }
+[(INFO)(17-Jan-23 00:04:54)(_run)] MESSAGE : { Title #3 has length of 320 seconds which is less than minimum title length of 3600 seconds and was therefore skipped (3025) }
+[(INFO)(17-Jan-23 00:04:59)(_run)] MESSAGE : { Operation successfully completed (5011) }
+[(ERROR)(17-Jan-23 00:04:59)(_run)] MESSAGE : { Error while parsing 'TINFO:0,2,0,"Stepmom"' }
+[(INFO)(17-Jan-23 00:04:59)(get_dvd_info)] MESSAGE : { 'PASS' : Used 'MakeMKV.info' to get the 'DISC_INFO' from the DVD. 'DISC_INFO' = 'stepmom' }
+[(INFO)(17-Jan-23 00:04:59)(get_dvd_info)] MESSAGE : { 'PASS' : Used 'codecs.open' to get the 'ITEMS' from the 'MOVIE_TITLES_FILE'.' }
+[(INFO)(17-Jan-23 00:04:59)(get_best_match)] MESSAGE : { 'PASS' : Found a match for 'VOLUME_INFO' : 'pride divide 1997' with a probability of : '0.46153846153846156' out of 1.00 }
+[(INFO)(17-Jan-23 00:05:00)(get_best_match)] MESSAGE : { 'PASS' : Found a match for 'DISC_INFO' : 'stepmom 1998' with a probability of : '0.7368421052631579' out of 1.00 }
+[(INFO)(17-Jan-23 00:05:00)(get_best_match)] MESSAGE : { 'PASS' : The Most likely Movie title for Drive 'E:\stepmom' is : 'stepmom 1998'   }
+[(INFO)(17-Jan-23 00:05:00)(get_title_and_poster)] MESSAGE : { 'PASS' : We have a IMDB link for the movie'E:\stepmom'-'stepmom 1998' : https://www.imdb.com/title/tt0120686/ }
+[(INFO)(17-Jan-23 00:05:09)(get_title_and_poster)] MESSAGE : { 'PASS' : We have a MOVIE TITLE from IMDB for the DVD'E:\stepmom' : 'Stepmom 1998' }
+[(INFO)(17-Jan-23 00:05:11)(get_title_and_poster)] MESSAGE : { 'PASS' : We have a MOVIE POSTER from IMDB for the DVD }
+[(INFO)(17-Jan-23 00:05:13)(get_title_and_poster)] MESSAGE : { 'PASS' : The directory for the movie : 'Stepmom 1998' has been created and the POSTER has been downloaded }
+[(INFO)(17-Jan-23 00:05:13)(get_title_and_poster)] MESSAGE : { 'PASS' : Ready to RIP : 'Stepmom 1998' to the location Ripping/Stepmom 1998/ }
