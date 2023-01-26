@@ -29,6 +29,7 @@ import logging
 
 
 def main():
+
     # Set up logging configuration
     logging.basicConfig(
         # Set the logging level to INFO, which will log messages of level INFO and above
@@ -42,32 +43,24 @@ def main():
         # Specify the format of the timestamp in the log messages
         datefmt="%d-%b-%y %H:%M:%S",
     )
-
     logging.info(
         f"'<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<!!!!!!!!!START!!!!!!!!!>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>'"
     )
     logging.info(
         f"'PRE-START CHECKS' : '!!STARTED!!': Checking That All the Directories are inplace and that there is a DVD drive connected to the PC."
     )
-
     # File containing the movie titles
     MOVIE_TITLES_FILE = "movie_titles.txt"
-
     # Directory containing completed movies
     COMPLETED_DIR = "Completed/"
-
     # Directory containing movies in the collection
     COLLECTION_DIR = "Collection/"
-
     # Directory containing movies currently being ripped
     RIPPING_DIR = "Ripping/"
-
     # Directory containing movies currently being transcoded
     TRANSCODING_DIR = "Transcoding/"
-
     # Directory containing queued movies
     QUEUED_DIR = "Queued/"
-
     # List of all the directories
     DIRECTORIES = [
         COMPLETED_DIR,
@@ -76,7 +69,6 @@ def main():
         TRANSCODING_DIR,
         QUEUED_DIR,
     ]
-
     for directory in DIRECTORIES:
         if os.path.isdir(directory) != True:
             logging.warning(
@@ -86,7 +78,6 @@ def main():
     logging.info(
         f"'PRE-START CHECKS' : '!!PASS!!' All of these Directories have been created {DIRECTORIES}."
     )
-
     for letter in ascii_uppercase:
         directory = COLLECTION_DIR + letter + "/"
         if os.path.isdir(directory) != True:
@@ -110,7 +101,6 @@ def main():
                 )
     except Exception as e:
         DVD_DRIVES = []
-
     logging.info(
         f"'PRE-START CHECKS' : '!!FINISHED!!': All of the 'PRE-START CHECKS' have finished. Ready to RIP."
     )
@@ -130,7 +120,6 @@ def main():
         logging.info(
             f"'RIP AND SCRAPE' : '!!PASS!!': The drive letter : '{drive_letter}' has been removed from the 'DVD_DRIVES' list : {DVD_DRIVES}."
         )
-
         try:
             VOLUME_INFO = win32api.GetVolumeInformation(drive_letter[:-1])
             VOLUME_INFO = (
@@ -163,7 +152,6 @@ def main():
             logging.info(
                 f"'RIP AND SCRAPE' : '!!FAILED!!': Due to an 'ERRROR'.'MakeMKV.info' Could not be used to get the 'DISC_INFO' ERROR: {e}."
             )
-
         try:
             with codecs.open(MOVIE_TITLES_FILE, "r", encoding="utf-8") as file:
                 lines = file.readlines()
@@ -182,7 +170,6 @@ def main():
             logging.info(
                 f"'RIP AND SCRAPE' : '!!FAILED!!': Due to an 'ERRROR'.'codecs.open' Could not open or read the file '{MOVIE_TITLES_FILE}'. ERROR: {e}."
             )
-
         if DISC_INFO == None and VOLUME_INFO != None:
             logging.warning(
                 f"'RIP AND SCRAPE' : '!!WARNING!!': Using 'VOLUME_INFO' as 'DISC_INFO' because 'DISC_INFO' is equal to : '{DISC_INFO}."
@@ -193,7 +180,6 @@ def main():
                 f"'RIP AND SCRAPE' : '!!WARNING!!': Using 'DISC_INFO' as 'VOLUME_INFO' because 'VOLUME_INFO' is equal to : '{VOLUME_INFO}."
             )
             VOLUME_INFO = DISC_INFO
-
         #
         #
         #
@@ -204,7 +190,6 @@ def main():
         #
         #
         #
-
         if ITEMS != [] and VOLUME_INFO and DISC_INFO != None:
             logging.info(
                 f"'RIP AND SCRAPE' : '!!PASS!!': We have a 'VOLUME_INFO' : '{VOLUME_INFO}', 'DISC_INFO' : '{DISC_INFO}', and a list of Movies 'ITEMS'."
@@ -271,13 +256,11 @@ def main():
                         logging.info(
                             f"'RIP AND SCRAPE' : '!!PASS!!': Between 'VOLUME_INFO' and 'DISC_INFO' the 'BEST_MATCH' was 'DISC_INFO': '{BEST_MATCH}'."
                         )
-
             except Exception as e:
                 BEST_MATCH = VOLUME_INFO
                 logging.warning(
                     f"'RIP AND SCRAPE' : '!!WARNING!!': An ERROR has occurred while looking for a movie title match, using 'VOLUME_INFO' as the 'BEST_MATCH': '{BEST_MATCH}'."
                 )
-
             try:
                 query = BEST_MATCH.replace(" ", "+")
                 url = f"https://www.google.com/search?q={query}+site:imdb.com"
@@ -316,7 +299,6 @@ def main():
                 options.add_argument("--no-sandbox")
                 service = Service("chromedriver.exe")
                 service.start()
-
                 browser = webdriver.Remote(service.service_url, options=options)
                 browser.get(movie_imdb_link)
                 logging.info(
@@ -368,7 +350,6 @@ def main():
                         logging.info(
                             f"'RIP AND SCRAPE' : '!!PASS!!': Scrapping completed, closing browser."
                         )
-
             except Exception as e:
                 service.stop()
                 MOVIE_TITLE = BEST_MATCH
@@ -402,7 +383,6 @@ def main():
                     logging.info(
                         f"'RIP AND SCRAPE' : '!!PASS!!': The 'Drive letter' has been added back the the 'DVD_DRIVES' list : {DVD_DRIVES} and the 'DVD DRIVE' has been Opened."
                     )
-
             except Exception as e:
                 ctypes.windll.WINMM.mciSendStringW(
                     "set cdaudio door open", None, 0, None
@@ -472,7 +452,6 @@ def main():
                                 f"'TRANSCODE MOVIE' : '!!PASS!!': The Input file : '{input_file}' is now Transcoding."
                             )
                             time.sleep(3)
-
                             os.remove(f"{input_file}")
                             logging.info(
                                 f"'TRANSCODE MOVIE' : '!!PASS!!': The Input file : '{input_file}' Has finished transcoding : {output_file}."
@@ -542,9 +521,7 @@ def main():
                 logging.info(
                     f"'<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<!!!!!!!!!START!!!!!!!!!>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>'"
                 )
-
                 rip_and_scrape_dvd(DVD_DRIVES[0])
-
                 RIP_AND_SCRAPE_THREAD = threading.Thread(
                     target=rip_and_scrape_dvd, args=(DVD_DRIVES[0])
                 )
@@ -776,17 +753,6 @@ def main():
 
         curses.wrapper(terminal_ui)
 
-    def start_threads():
-        RIP_SCRAPE_TRANSCODE_THREAD1 = threading.Thread(target=rip_scrape_loop)
-        RIP_SCRAPE_TRANSCODE_THREAD1.daemon = True
-        RIP_SCRAPE_TRANSCODE_THREAD1.start()
-        RIP_SCRAPE_TRANSCODE_THREAD2 = threading.Thread(target=transcode_loop)
-        RIP_SCRAPE_TRANSCODE_THREAD2.daemon = True
-        RIP_SCRAPE_TRANSCODE_THREAD2.start()
-        TERMINAL_UI_THREAD = threading.Thread(target=term_ui)
-        TERMINAL_UI_THREAD.daemon = True
-        TERMINAL_UI_THREAD.start()
-
     root = Tk()
     root.title("https://github.com/mickdupreez/mr_ripper")
     root.iconbitmap("icon.ico")
@@ -804,15 +770,11 @@ def main():
     red = "#ff5555"
     yellow = "#f1fa8c"
     default_background = PhotoImage(file="default.png")
-
     instructions1 = """This list below contains successfully transcoded movies.
-    Once verified, the file will be moved to your collection."""
-    instructions2 = """ This is a list of All your Movies. These Movies have
-    already been organized into directories by Letter for you.
+    Once verified, file will be moved to your collection."""
+    instructions2 = """This is a list of All your Movies. These Movies have
+    already been organized into directories by Letter.
     All The Movies are inside of the "plex' directory."""
-    info_label = """This program is in beta, there are still
-    some bugs that need to ironed out.
-    Check out the github for Documentation"""
 
     def poster_art():
         back_ground_img = Label(image=default_background)
@@ -821,7 +783,6 @@ def main():
         def refresh():
             while True:
                 if len(os.listdir(RIPPING_DIR)) != 0:
-
                     for dir in os.listdir(RIPPING_DIR):
                         for file in os.listdir(f"{RIPPING_DIR}{dir}"):
                             if file.endswith(".png"):
@@ -832,18 +793,16 @@ def main():
                                 BG_POSTER = PhotoImage(
                                     file=(f"{RIPPING_DIR}{dir}/{dir}.png")
                                 )
-                                back_ground_img = Label(image=BG_POSTER)
-                                back_ground_img.place(x=447, y=0)
-                                time.sleep(5)
+                        back_ground_img = Label(image=BG_POSTER)
+                        back_ground_img.place(x=447, y=0)
                 else:
                     back_ground_img = Label(image=default_background)
                     back_ground_img.place(x=447, y=0)
+                    time.sleep(5)
 
         poster_art_thread = threading.Thread(target=refresh)
         poster_art_thread.daemon = True
         poster_art_thread.start()
-
-    poster_art()
 
     def left_frame_ui():
         ui_frame_left = LabelFrame(
@@ -861,7 +820,6 @@ def main():
         intro4 = "to your Movie collection.\n"
         intro5 = "\nPlease wait for all the boxes below to be empty\n"
         intro6 = "before you quit the program,"
-
         intro_label = Label(
             ui_frame_left,
             text=intro
@@ -929,7 +887,6 @@ def main():
         ripping_ui()
 
         def uncompressed_ui():
-
             uncompressed_label1 = Label(
                 ui_frame_left,
                 text="Nothing in Que:",  # Text displayed on the label
@@ -969,7 +926,6 @@ def main():
                     "bold",
                 ),  # Font and size of the text in the listbox
             )
-
             uncompressed_label1.place(x=0, y=365)
             uncompressed_label2.place(x=0, y=396)
             uncompressed_listbox.place(x=1, y=456)
@@ -1033,7 +989,6 @@ def main():
                     "bold",
                 ),  # Font and size of the text in the listbox
             )
-
             transcoding_status1.place(x=0, y=679)  # + 31
             transcoding_status2.place(x=0, y=710)  # + 60
             transcoding_dir_listbox.place(x=0, y=770)
@@ -1065,10 +1020,7 @@ def main():
 
         transcoding_ui()
 
-    left_frame_ui()
-
     def right_frame_ui():
-
         ui_frame_right = LabelFrame(
             root,
             text="Compressed Movies and your Collection",  # Text displayed on the label frame
@@ -1114,7 +1066,6 @@ def main():
                     "bold",
                 ),  # Font and size of the text in the listbox
             )
-
             completed_status.place(x=0, y=0)
             completed_status_instructions.place(x=0, y=31)
             compressed_dir_listbox.place(x=1, y=91)
@@ -1171,16 +1122,13 @@ def main():
                     "bold",
                 ),  # Font and size of the text in the listbox
             )
-
             plex_label1.place(x=0, y=345)
             plex_label2.place(x=0, y=375)
             plex_listbox.place(x=1, y=446)
-
             for letter in os.listdir(COLLECTION_DIR):
                 for movie in os.listdir(f"{COLLECTION_DIR}/{letter}"):
                     if movie not in COLLECTION:
                         COLLECTION.append(movie)
-
             if len(COLLECTION) != len(plex_listbox.get(0, END)):
                 plex_listbox.delete(0, END)
                 for letter in os.listdir(COLLECTION_DIR):
@@ -1191,9 +1139,24 @@ def main():
         compressed_ui()
         plex_ui()
 
-    right_frame_ui()
-    start_threads()
-
+    POSTER_ART_THREAD = threading.Thread(target=poster_art)
+    POSTER_ART_THREAD.daemon = True
+    POSTER_ART_THREAD.start()
+    LEFT_UI_THREAD = threading.Thread(target=left_frame_ui)
+    LEFT_UI_THREAD.daemon = True
+    LEFT_UI_THREAD.start()
+    RIGHT_UI_THREAD = threading.Thread(target=right_frame_ui)
+    RIGHT_UI_THREAD.daemon = True
+    RIGHT_UI_THREAD.start()
+    RIP_SCRAPE_LOOP_THREAD = threading.Thread(target=rip_scrape_loop)
+    RIP_SCRAPE_LOOP_THREAD.daemon = True
+    RIP_SCRAPE_LOOP_THREAD.start()
+    TRANSCODE_LOOP_THREAD = threading.Thread(target=transcode_loop)
+    TRANSCODE_LOOP_THREAD.daemon = True
+    TRANSCODE_LOOP_THREAD.start()
+    TERMINAL_UI_THREAD = threading.Thread(target=term_ui)
+    TERMINAL_UI_THREAD.daemon = True
+    TERMINAL_UI_THREAD.start()
     root.mainloop()
 
 
