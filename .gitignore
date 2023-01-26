@@ -1,9 +1,10 @@
 __pycache__
 .vscode
 desktop.ini
-main_log.log
 Collection
 Completed
 Queued
 Ripping
 Transcoding
+*.log
+main_log.log
