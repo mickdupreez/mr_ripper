@@ -24,7 +24,6 @@ from curses.textpad import Textbox, rectangle
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service
 from string import ascii_uppercase
-from colorit import init_colorit, background
 import logging
 
 
@@ -568,7 +567,7 @@ def main():
                 stdscr.addstr(
                     1,
                     1,
-                    "Mr Ripper 2.1.1 https://github.com/mickdupreez/mr_ripper|",
+                    "Mr Ripper 2.2.0 https://github.com/mickdupreez/mr_ripper|",
                     BLUE | curses.A_BOLD,
                 )
                 if os.listdir(RIPPING_DIR) == [] and os.listdir(TRANSCODING_DIR) != []:
