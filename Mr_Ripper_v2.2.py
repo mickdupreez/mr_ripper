@@ -179,16 +179,7 @@ def main():
                 f"'RIP AND SCRAPE' : '!!WARNING!!': Using 'DISC_INFO' as 'VOLUME_INFO' because 'VOLUME_INFO' is equal to : '{VOLUME_INFO}."
             )
             VOLUME_INFO = DISC_INFO
-        #
-        #
-        #
-        #
-        #
-        #
-        #
-        #
-        #
-        #
+
         if ITEMS != [] and VOLUME_INFO and DISC_INFO != None:
             logging.info(
                 f"'RIP AND SCRAPE' : '!!PASS!!': We have a 'VOLUME_INFO' : '{VOLUME_INFO}', 'DISC_INFO' : '{DISC_INFO}', and a list of Movies 'ITEMS'."
@@ -362,15 +353,16 @@ def main():
                 )
             try:
                 makemkv = MakeMKV(drive_number)
+
                 logging.info(
                     f"'RIP AND SCRAPE' : '!!PASS!!': Used MakeMKV to initialize the target DVD. Beginning RIP on 'Drive Number ': '{drive_number} {drive_letter}': '{MOVIE_TITLE}' to the 'OUTPUT_DIRECTORY' : '{OUTPUT_DIRECTORY}'."
                 )
                 makemkv.mkv(drive_number, OUTPUT_DIRECTORY)
+                time.sleep(5)
                 for file in os.listdir(f"{RIPPING_DIR}{MOVIE_TITLE}"):
                     if file.endswith(".mkv"):
-                        uncompressed_file = file
                         shutil.move(f"{RIPPING_DIR}{MOVIE_TITLE}", QUEUED_DIR)
-                        time.sleep(5)
+
                 logging.info(
                     f"'RIP AND SCRAPE' : '!!PASS!!': The DVD has finished RIPPING and has been moved to the 'QUEUED_DIR' for processing."
                 )
@@ -382,6 +374,8 @@ def main():
                     logging.info(
                         f"'RIP AND SCRAPE' : '!!PASS!!': The 'Drive letter' has been added back the the 'DVD_DRIVES' list : {DVD_DRIVES} and the 'DVD DRIVE' has been Opened."
                     )
+                    time.sleep(5)
+
             except Exception as e:
                 ctypes.windll.WINMM.mciSendStringW(
                     "set cdaudio door open", None, 0, None
@@ -393,6 +387,7 @@ def main():
             logging.info(
                 f"'RIP AND SCRAPE' : '!!FINISHED!!': 'RIP' and 'SCRAPE' has completed successfully"
             )
+            time.sleep(5)
         else:
             ctypes.windll.WINMM.mciSendStringW("set cdaudio door open", None, 0, None)
             DVD_DRIVES.append(drive_letter)
@@ -409,6 +404,7 @@ def main():
         time.sleep(5)
 
     def transcode_movie():
+
         if os.listdir(QUEUED_DIR) != []:
             logging.info(
                 f"'<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<!!!!!!!!!START!!!!!!!!!>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>'"
@@ -484,9 +480,20 @@ def main():
                 logging.info(
                     f"'TRANSCODE MOVIE' : '!!PASS!!': The Movie : '{title}' has a file size of : '{output_directory_size_gb}'."
                 )
+
+                ################################# SWAP THE <> back !!!!
                 if output_directory_size_gb > 20:
                     dir_destination = f"{TRANSCODING_DIR}"
                     if len(os.listdir(TRANSCODING_DIR)) <= 2:
+                        print(dir_location)
+                        print(dir_location)
+                        print(dir_location)
+                        print(
+                            "################################################################"
+                        )
+                        print(dir_destination)
+                        print(dir_destination)
+                        print(dir_destination)
                         shutil.move(dir_location, dir_destination)
                         TRANSCODE_THREAD = threading.Thread(target=transcode)
                         TRANSCODE_THREAD.daemon = True
@@ -782,9 +789,11 @@ def main():
         def refresh():
             while True:
                 if len(os.listdir(RIPPING_DIR)) != 0:
+
                     for dir in os.listdir(RIPPING_DIR):
                         for file in os.listdir(f"{RIPPING_DIR}{dir}"):
                             if file.endswith(".png"):
+
                                 poster = Im.open(f"{RIPPING_DIR}{dir}/{file}")
                                 poster = poster.resize((592, 900))
                                 os.remove(f"{RIPPING_DIR}{dir}/{file}")
@@ -792,8 +801,14 @@ def main():
                                 BG_POSTER = PhotoImage(
                                     file=(f"{RIPPING_DIR}{dir}/{dir}.png")
                                 )
-                        back_ground_img = Label(image=BG_POSTER)
-                        back_ground_img.place(x=447, y=0)
+                        if BG_POSTER == PhotoImage(
+                            file=(f"{RIPPING_DIR}{dir}/{dir}.png")
+                        ):
+                            pass
+                        else:
+                            back_ground_img = Label(image=BG_POSTER)
+                            back_ground_img.place(x=447, y=0)
+                            time.sleep(5)
                 else:
                     back_ground_img = Label(image=default_background)
                     back_ground_img.place(x=447, y=0)
@@ -1149,13 +1164,13 @@ def main():
     RIGHT_UI_THREAD.start()
     RIP_SCRAPE_LOOP_THREAD = threading.Thread(target=rip_scrape_loop)
     RIP_SCRAPE_LOOP_THREAD.daemon = True
-    RIP_SCRAPE_LOOP_THREAD.start()
+    # RIP_SCRAPE_LOOP_THREAD.start()
     TRANSCODE_LOOP_THREAD = threading.Thread(target=transcode_loop)
     TRANSCODE_LOOP_THREAD.daemon = True
     TRANSCODE_LOOP_THREAD.start()
     TERMINAL_UI_THREAD = threading.Thread(target=term_ui)
     TERMINAL_UI_THREAD.daemon = True
-    TERMINAL_UI_THREAD.start()
+    # TERMINAL_UI_THREAD.start()
     root.mainloop()
 
 
