@@ -2,6 +2,7 @@ import os
 import win32api
 import win32file
 import itertools
+import shutil
 from string import ascii_uppercase
 
 class Directories:
@@ -220,6 +221,60 @@ class Directories:
             self.Transcoding_slot_2 = f"{self.Transcoding_Dir}Slot_2/" # assign the path of Slot 2 to a variable
             self.Transcoding_slot_3 = f"{self.Transcoding_Dir}Slot_3/" # assign the path of Slot 3 to a variable
             
+            
+        def get_directory_size(path):
+            total_size = 0
+            for dirpath, dirnames, filenames in os.walk(path):
+                for f in filenames:
+                    fp = os.path.join(dirpath, f)
+                    total_size += os.path.getsize(fp)
+            if total_size < 1024:
+                return f"{total_size} B"
+            elif total_size < 1024**2:
+                return f"{total_size/1024:.2f} KB"
+            elif total_size < 1024**3:
+                return f"{total_size/1024**2:.2f} MB"
+            else:
+                return f"{total_size/1024**3:.2f} GB"
+            
+
+        def get_storage_size(file_path):
+            total, used, free = shutil.disk_usage(
+                os.path.dirname(os.path.abspath(file_path))
+            )
+            total = total // (1024**3)
+            total = f"{total} GB"
+            used = used // (1024**3)
+            used = f"{used} GB"
+            free = free // (1024**3)
+            free = f"{free} GB"
+            return total, used, free
+
+        self.storage_total, self.storage_used, self.storage_free = get_storage_size(".")
+        self.Collection_Dir_size = get_directory_size(self.Collection_Dir)
+        self.Completed_Dir_size = get_directory_size(self.Completed_Dir)
+        self.Queued_Dir_size = get_directory_size(self.Queued_Dir)
+        self.Ripping_Dir_size = get_directory_size(self.Ripping_Dir)
+        self.Transcoding_Dir_size = get_directory_size(self.Transcoding_Dir)
+        self.Transcoding_slot_1_size = get_directory_size(self.Transcoding_slot_1)
+        self.Transcoding_slot_2_size = get_directory_size(self.Transcoding_slot_2)
+        self.Transcoding_slot_3_size = get_directory_size(self.Transcoding_slot_3)
+        
+        self.Ripping_Bay_1_size = get_directory_size(self.Ripping_Bay_1)
+        #self.Ripping_Bay_2_size = get_directory_size(self.Ripping_Bay_2)
+        #self.Ripping_Bay_3_size = get_directory_size(self.Ripping_Bay_3)
+        
+        
+        QUEUED_DIR = (self.Queued_Dir, self.Queued_Dir_List, self.Queued_Dir_size)
+        
+        print(type(QUEUED_DIR))
+        
+        
+        
+        
+
+
+
 
 def main():
     Directories()

@@ -89,6 +89,7 @@ def term_ui():
             free = free // (1024**3)
             free = f"{free} GB"
             return total, used, free
+
         def stats_box():
             (
                 total,
