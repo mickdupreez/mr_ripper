@@ -5,40 +5,6 @@ import itertools
 from string import ascii_uppercase
 
 class Directories:
-    """
-    Directories class to manage directories and subdirectories.
-    
-    This class creates and maintains the following directories:
-        - Collection/
-        - Completed/
-        - Queued/
-        - Ripping/
-        - Transcoding/
-    
-    It also creates subdirectories within the Collection/ directory for each
-    uppercase letter and digit (e.g. Collection/A, Collection/B, Collection/0, etc.).
-    
-    The class also keeps track of the contents of each directory and stores them as a list
-    (e.g. Collection_Dir_List, Completed_Dir_List, etc.).
-    
-    Additionally, the class creates a directory for each CD-ROM drive found on the system in
-    the Ripping/ directory, with the name "Drive_#...", where # is the index of the drive.
-    
-    Attributes:
-        Collection_Dir (str): The path to the Collection/ directory.
-        Completed_Dir (str): The path to the Completed/ directory.
-        Queued_Dir (str): The path to the Queued/ directory.
-        Ripping_Dir (str): The path to the Ripping/ directory.
-        Transcoding_Dir (str): The path to the Transcoding/ directory.
-        Directories (list): A list of all the directories created and maintained by this class.
-        Collection_Dir_List (list): A list of the contents of the Collection/ directory.
-        Completed_Dir_List (list): A list of the contents of the Completed/ directory.
-        Queued_Dir_List (list): A list of the contents of the Queued/ directory.
-        Ripping_Dir_List (list): A list of the contents of the Ripping/ directory.
-    
-    Methods:
-        __init__: Initializes the Directories class and creates/checks for the existence of each directory.
-    """
     def __init__(self):
         self.Collection_Dir = "Collection/" # Define the directory for the collection of files
         self.Completed_Dir = "Completed/" # Define the directory for the completed files
