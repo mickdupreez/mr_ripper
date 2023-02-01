@@ -243,10 +243,10 @@ class Rip_And_Scrape:
 
                         # Set the user agent string to mimic a Chrome browser 
                         user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36"
-                        
+
                         # Create an instance of ChromeOptions to set various options for the webdriver instance
                         options = webdriver.ChromeOptions()
-                        
+
                         # Add arguments to the options instance to set the browser to run in headless mode (without GUI), 
                         # set the log level to 3, set the user-agent, set the window size, 
                         # ignore certificate errors, allow running insecure content, disable extensions, 
@@ -266,19 +266,19 @@ class Rip_And_Scrape:
                         options.add_argument("--disable-gpu")
                         options.add_argument("--disable-dev-shm-usage")
                         options.add_argument("--no-sandbox")
-                        
+
                         # Create an instance of the Chrome driver service
                         service = Service("chromedriver.exe")
-                        
+
                         # Start the service
                         service.start()
-                        
+
                         # Create an instance of the Chrome webdriver
                         browser = webdriver.Remote(service.service_url, options=options)
-                        
+
                         # Navigate to the IMDb page of the movie specified by the movie_link attribute
                         browser.get(self.movie_link)
-                        
+
                         # Extract the title of the movie from the page title, and remove certain characters to clean the title.
                         movie_title = (
                             browser.title.replace(") - IMDb", "")
@@ -370,7 +370,7 @@ class Rip_And_Scrape:
     def Rip(self):
         try:
             self.DVD.mkv(self.drive_number, self.movie_directory)
-            shutil.move(f"{self.movie_directory}", Directories().Queued_Dir)
+            shutil.move(f"{self.movie_directory}", Directories().queued_directory)
             ctypes.windll.WINMM.mciSendStringW(
                 "set cdaudio door open", None, self.drive_number, None
             )
@@ -394,7 +394,7 @@ class Rip_And_Scrape:
 def TESTING():
     def TARGET_1():
         while True:
-            TARGET = Directories().Target1
+            TARGET = Directories().RIPPING_BAY_1
             if not TARGET[0]:
                 pass
             else:
@@ -405,7 +405,7 @@ def TESTING():
 
     def TARGET_2():
         while True:
-            TARGET = Directories().Target2
+            TARGET = Directories().RIPPING_BAY_2
             if not TARGET[0]:
                 pass
             else:
@@ -416,7 +416,7 @@ def TESTING():
 
     def TARGET_3():
         while True:
-            TARGET = Directories().Target3
+            TARGET = Directories().RIPPING_BAY_3
             if not TARGET[0]:
                 pass
             else:

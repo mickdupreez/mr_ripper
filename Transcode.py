@@ -25,8 +25,8 @@ class Transcode:
         Returns: None
         """
         # Get the queued directory and list of files in the queued directory
-        self.queue = Directories().Queued_Dir
-        self.queue_list = Directories().Queued_Dir_List
+        self.queue = Directories().queued_directory
+        self.queue_list = Directories().queued_directory_list
         # Get the slot directory
         self.slot = slot
         # Get the list of files in the slot directory
@@ -55,7 +55,7 @@ class Transcode:
                             f"{self.target_dir}/{self.title}.mkv",
                         )
                 # Move the target directory to the completed directory
-                shutil.move(self.target_dir, Directories().Completed_Dir)
+                shutil.move(self.target_dir, Directories().completed_directory)
             else:
                 # Move the target directory to the slot directory
                 shutil.move(self.target_dir, self.slot)
@@ -94,18 +94,18 @@ class Transcode:
             # Remove the input file
             os.remove(f"{self.input_file}")
             # Move the input directory to the completed directory
-            shutil.move(self.input_dir, Directories().Completed_Dir)
+            shutil.move(self.input_dir, Directories().completed_directory)
 
 
 #! TESTING !#
 def TESTING():
-    slot1_dir = Directories().Transcoding_slot_1
+    slot1_dir = Directories().transcoding_slot_1
     slot1 = Transcode(slot1_dir)
     threading.Thread(target=slot1.Transcode).start()
-    slot2_dir = Directories().Transcoding_slot_2
+    slot2_dir = Directories().transcoding_slot_2
     slot2 = Transcode(slot2_dir)
     threading.Thread(target=slot2.Transcode).start()
-    slot3_dir = Directories().Transcoding_slot_3
+    slot3_dir = Directories().transcoding_slot_3
     slot3 = Transcode(slot3_dir)
     threading.Thread(target=slot3.Transcode).start()
     time.sleep(1)
