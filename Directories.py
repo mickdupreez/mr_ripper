@@ -7,7 +7,19 @@ from string import ascii_uppercase
 
 
 class Directories:
+    """
+    The Directories class is used to manage the different directories in a file system.
+    It includes functions to create and manage the Collection, Completed, Queued, Ripping, and Transcoding directories.
+    It also calculates the size of each directory and keeps track of the storage size of the file system.
+    """
+
     def __init__(self):
+        """
+        The __init__ method is called when an object of the Directories class is created.
+        It sets up the different directories, calculates the size of each directory,
+        and keeps track of the storage size of the file system.
+        """
+
         def get_directory_size(path):
             """
             Calculates the total size of the directory at the given `path`.
