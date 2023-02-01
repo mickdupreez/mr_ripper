@@ -434,4 +434,11 @@ def Directories_Testing():
 
 
 if __name__ == "__main__":
-    Directories_Testing()
+    try:
+        for i in range(100):
+            Directories_Testing()
+        print(
+            "################################ This Script has finished Running! 100 out 100 Successful Runs ################################"
+        )
+    except Exception as e:
+        print(e)
