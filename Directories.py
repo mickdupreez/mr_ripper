@@ -373,65 +373,65 @@ class Directories:
         self.RIPPING_BAY_3 = ripping_bay_3
 
 
-def TEST():
-    TEST = Directories()
+def Directories_Testing():
+    Directories_Testing = Directories()
     print(
         "DRIVE INFO | What you should see '('Drive size', 'Space used on Drive', 'Free space on Drive')' :  ",
-        TEST.MAIN_DIRECTORY,
+        Directories_Testing.MAIN_DIRECTORY,
     )
     print(
         "COLLECTION_DIRECTORY INFO | What you should see '('Directory location', 'A list of all the items in the Directory', 'Directory size')' :  ",
-        TEST.COLLECTION_DIRECTORY,
+        Directories_Testing.COLLECTION_DIRECTORY,
     )
     print(
         "COMPLETED_DIRECTORY INFO | What you should see '('Directory location', 'A list of all the items in the Directory', 'Directory size')' :  ",
-        TEST.COMPLETED_DIRECTORY,
+        Directories_Testing.COMPLETED_DIRECTORY,
     )
     print(
         "QUEUED_DIRECTORY INFO | What you should see '('Directory location', 'A list of all the items in the Directory', 'Directory size')' :  ",
-        TEST.QUEUED_DIRECTORY,
+        Directories_Testing.QUEUED_DIRECTORY,
     )
     print(
         "RIPPING_DIRECTORY INFO | What you should see '('Directory location', 'A list of all the items in the Directory', 'Directory size')' :  ",
-        TEST.RIPPING_DIRECTORY,
+        Directories_Testing.RIPPING_DIRECTORY,
     )
     print(
         "TRANSCODING_DIRECTORY INFO | What you should see '('Directory location', 'A list of all the items in the Directory', 'Directory size')' :  ",
-        TEST.TRANSCODING_DIRECTORY,
+        Directories_Testing.TRANSCODING_DIRECTORY,
     )
     print(
         "TRANSCODING_SLOT_LIST INFO | What you should see '['A list of the Transcoding slot Directory locations']' :  ",
-        TEST.TRANSCODING_SLOT_LIST,
+        Directories_Testing.TRANSCODING_SLOT_LIST,
     )
     print(
         "TRANSCODING_SLOT_1 INFO | What you should see '('drive size', 'space used on drive', 'free space on drive')' :  ",
-        TEST.TRANSCODING_SLOT_1,
+        Directories_Testing.TRANSCODING_SLOT_1,
     )
     print(
         "TRANSCODING_SLOT_2 INFO | What you should see '('Directory location', 'A list of all the items in the Directory', 'Directory size')' :  ",
-        TEST.TRANSCODING_SLOT_2,
+        Directories_Testing.TRANSCODING_SLOT_2,
     )
     print(
         "TRANSCODING_SLOT_3 INFO | What you should see '('Directory location', 'A list of all the items in the Directory', 'Directory size')' :  ",
-        TEST.TRANSCODING_SLOT_3,
+        Directories_Testing.TRANSCODING_SLOT_3,
     )
     print(
         "RIPPING_BAY_LIST INFO | What you should see  '['A list of the Ripping Bay Directory locations']' :  ",
-        TEST.RIPPING_BAY_LIST,
+        Directories_Testing.RIPPING_BAY_LIST,
     )
     print(
         "RIPPING_BAY_1 INFO | What you should see '('Drive letter', 'Drive number', '[Movie thats Ripping]', 'Directory size')' :  ",
-        TEST.RIPPING_BAY_1,
+        Directories_Testing.RIPPING_BAY_1,
     )
     print(
         "RIPPING_BAY_2 INFO | What you should see '('Drive letter', 'Drive number', '[Movie thats Ripping]', 'Directory size')' :  ",
-        TEST.RIPPING_BAY_2,
+        Directories_Testing.RIPPING_BAY_2,
     )
     print(
         "RIPPING_BAY_3 INFO | What you should see '('Drive letter', 'Drive number', '[Movie thats Ripping]', 'Directory size')' :  ",
-        TEST.RIPPING_BAY_3,
+        Directories_Testing.RIPPING_BAY_3,
     )
 
 
 if __name__ == "__main__":
-    TEST()
+    Directories_Testing()
