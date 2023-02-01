@@ -5,6 +5,7 @@ import itertools
 import shutil
 from string import ascii_uppercase
 
+
 class Directories:
     def __init__(self):
         def get_directory_size(path):
@@ -61,7 +62,7 @@ class Directories:
 
         # Get the total storage size, used storage size and free storage size of the current directory
         storage_total, storage_used, storage_free = get_storage_size(".")
-        
+
         # Define the directory for the collection of files
         collection_directory = "Collection/"
         # Check if the collection directory exists
@@ -69,7 +70,9 @@ class Directories:
             # If not, create the directory
             os.mkdir(collection_directory)
             # Loop through all upper case letters and numbers as subdirectories
-            for letter_or_number in itertools.chain(ascii_uppercase, [str(i) for i in range(10)]):
+            for letter_or_number in itertools.chain(
+                ascii_uppercase, [str(i) for i in range(10)]
+            ):
                 # Define the subdirectory path
                 directory = collection_directory + letter_or_number + "/"
                 # Check if the subdirectory exists
@@ -91,7 +94,7 @@ class Directories:
         completed_directory_list = os.listdir(completed_directory)
         # Get the size of the completed directory in bytes
         completed_directory_size = get_directory_size(completed_directory)
-        
+
         # Define the directory for the queued files
         queued_directory = "Queued/"
         # Check if the directory exists
@@ -102,7 +105,7 @@ class Directories:
         queued_directory_list = os.listdir(queued_directory)
         # Get the size of the queued directory
         queued_directory_size = get_directory_size(queued_directory)
-        
+
         # Define the directory for the files that are being ripped
         ripping_directory = "Ripping/"
         # Check if the directory exists
@@ -113,7 +116,7 @@ class Directories:
         ripping_directory_list = os.listdir(ripping_directory)
         # Get the size of the ripping directory
         ripping_directory_size = get_directory_size(ripping_directory)
-        
+
         # Define the directory for transcoding
         transcoding_directory = "Transcoding/"
         # Check if the directory exists
@@ -147,7 +150,7 @@ class Directories:
         transcoding_slot_3_list = os.listdir(transcoding_slot_3)
         # Calculating the size of the third transcoding slot directory
         transcoding_slot_3_size = get_directory_size(transcoding_slot_3)
-        
+
         # Initializing an empty list to store the DVD drive letters
         dvd_drive_list = []
         # Getting the string of all logical drives on the system
@@ -166,7 +169,9 @@ class Directories:
                 # Getting the letter of the current drive
                 drive_letter = drive.replace(":\\", "")
                 # Creating the path string to the directory for the current drive
-                drive_directory = f"{ripping_directory}Bay_{drive_letter}_{drive_number}/"
+                drive_directory = (
+                    f"{ripping_directory}Bay_{drive_letter}_{drive_number}/"
+                )
                 # Checking if the directory for the current drive already exists
                 if os.path.isdir(drive_directory) == False:
                     # Creating the directory for the current drive if it does not exist
@@ -175,15 +180,23 @@ class Directories:
         # Try block to handle potential IndexError if there is not enough elements in the list
         try:
             # Check if the directory exists
-            if (os.path.isdir(f"{ripping_directory}{ripping_directory_list[0]}") == True):
+            if os.path.isdir(f"{ripping_directory}{ripping_directory_list[0]}") == True:
                 # Set the full path to the directory for this bay
-                ripping_directory_bay = (f"{ripping_directory}{ripping_directory_list[0]}/")
+                ripping_directory_bay = (
+                    f"{ripping_directory}{ripping_directory_list[0]}/"
+                )
                 # Get the size of the directory
                 ripping_directory_bay_size = get_directory_size(ripping_directory_bay)
                 # Get a list of the items in the directory
                 ripping_directory_bay_list = os.listdir(ripping_directory_bay)
                 # Create a tuple with the values for the first bay
-                ripping_bay_1 = (dvd_drive_list[0], 0, ripping_directory_bay, ripping_directory_bay_list, ripping_directory_bay_size)
+                ripping_bay_1 = (
+                    dvd_drive_list[0],
+                    0,
+                    ripping_directory_bay,
+                    ripping_directory_bay_list,
+                    ripping_directory_bay_size,
+                )
         except IndexError:
             # Set the values for the first bay to default values if there was an IndexError
             ripping_bay_1 = (None, None, [], "0 B")
@@ -191,15 +204,23 @@ class Directories:
         # Try block to handle potential IndexError if there is not enough elements in the list
         try:
             # Check if the directory exists
-            if (os.path.isdir(f"{ripping_directory}{ripping_directory_list[1]}") == True):
+            if os.path.isdir(f"{ripping_directory}{ripping_directory_list[1]}") == True:
                 # Set the full path to the directory for this bay
-                ripping_directory_bay = (f"{ripping_directory}{ripping_directory_list[1]}/")
+                ripping_directory_bay = (
+                    f"{ripping_directory}{ripping_directory_list[1]}/"
+                )
                 # Get the size of the directory
                 ripping_directory_bay_size = get_directory_size(ripping_directory_bay)
                 # Get a list of the items in the directory
                 ripping_directory_bay_list = os.listdir(ripping_directory_bay)
                 # Create a tuple with the values for the second bay
-                ripping_bay_2 = (dvd_drive_list[1], 1, ripping_directory_bay, ripping_directory_bay_list, ripping_directory_bay_size)
+                ripping_bay_2 = (
+                    dvd_drive_list[1],
+                    1,
+                    ripping_directory_bay,
+                    ripping_directory_bay_list,
+                    ripping_directory_bay_size,
+                )
         except IndexError:
             # Set the values for the second bay to default values if there was an IndexError
             ripping_bay_2 = (None, None, [], "0 B")
@@ -207,15 +228,23 @@ class Directories:
         # Try block to handle potential IndexError if there is not enough elements in the list
         try:
             # Check if the directory exists
-            if (os.path.isdir(f"{ripping_directory}{ripping_directory_list[2]}") == True):
+            if os.path.isdir(f"{ripping_directory}{ripping_directory_list[2]}") == True:
                 # Set the full path to the directory for this bay
-                ripping_directory_bay = (f"{ripping_directory}{ripping_directory_list[2]}/")
+                ripping_directory_bay = (
+                    f"{ripping_directory}{ripping_directory_list[2]}/"
+                )
                 # Get the size of the directory
                 ripping_directory_bay_size = get_directory_size(ripping_directory_bay)
                 # Get a list of the items in the directory
                 ripping_directory_bay_list = os.listdir(ripping_directory_bay)
                 # Create a tuple with the values for the third bay
-                ripping_bay_3 = (dvd_drive_list[2], 2, ripping_directory_bay, ripping_directory_bay_list, ripping_directory_bay_size)
+                ripping_bay_3 = (
+                    dvd_drive_list[2],
+                    2,
+                    ripping_directory_bay,
+                    ripping_directory_bay_list,
+                    ripping_directory_bay_size,
+                )
         except IndexError:
             # Set the values for the third bay to default values if there was an IndexError
             ripping_bay_3 = (None, None, [], "0 B")
@@ -227,7 +256,11 @@ class Directories:
         # Assign free storage of the drive to free_space_on_drive
         self.free_space_on_drive = storage_free
         # Create tuple MAIN_DIRECTORY with total_space_on_drive, used_space_on_drive, and free_space_on_drive
-        self.MAIN_DIRECTORY = (self.total_space_on_drive, self.used_space_on_drive, self.free_space_on_drive)
+        self.MAIN_DIRECTORY = (
+            self.total_space_on_drive,
+            self.used_space_on_drive,
+            self.free_space_on_drive,
+        )
         # Assign the collection_directory to collection_directory
         self.collection_directory = collection_directory
         # Assign list of items in collection_directory to collection_directory_list
@@ -235,7 +268,11 @@ class Directories:
         # Assign the size of collection_directory to collection_directory_size
         self.collection_directory_size = collection_directory_size
         # Create tuple COLLECTION_DIRECTORY with collection_directory, collection_directory_list, and collection_directory_size
-        self.COLLECTION_DIRECTORY = (self.collection_directory, self.collection_directory_list, self.collection_directory_size)
+        self.COLLECTION_DIRECTORY = (
+            self.collection_directory,
+            self.collection_directory_list,
+            self.collection_directory_size,
+        )
         # Assign the completed_directory to completed_directory
         self.completed_directory = completed_directory
         # Assign list of items in completed_directory to completed_directory_list
@@ -243,7 +280,11 @@ class Directories:
         # Assign the size of completed_directory to completed_directory_size
         self.completed_directory_size = completed_directory_size
         # Create tuple COMPLETED_DIRECTORY with completed_directory, completed_directory_list, and completed_directory_size
-        self.COMPLETED_DIRECTORY = (self.completed_directory, self.completed_directory_list, self.completed_directory_size)
+        self.COMPLETED_DIRECTORY = (
+            self.completed_directory,
+            self.completed_directory_list,
+            self.completed_directory_size,
+        )
         # Assign the queued_directory to queued_directory
         self.queued_directory = queued_directory
         # Assign list of items in queued_directory to queued_directory_list
@@ -251,7 +292,11 @@ class Directories:
         # Assign the size of queued_directory to queued_directory_size
         self.queued_directory_size = queued_directory_size
         # Create tuple QUEUED_DIRECTORY with queued_directory, queued_directory_list, and queued_directory_size
-        self.QUEUED_DIRECTORY = (self.queued_directory, self.queued_directory_list, self.queued_directory_size)
+        self.QUEUED_DIRECTORY = (
+            self.queued_directory,
+            self.queued_directory_list,
+            self.queued_directory_size,
+        )
         # Assign the ripping_directory to ripping_directory
         self.ripping_directory = ripping_directory
         # Assign list of items in ripping_directory to ripping_directory_list
@@ -259,7 +304,11 @@ class Directories:
         # Assign the size of ripping_directory to ripping_directory_size
         self.ripping_directory_size = ripping_directory_size
         # Create tuple RIPPING_DIRECTORY with ripping_directory, ripping_directory_list, and ripping_directory_size
-        self.RIPPING_DIRECTORY = (self.ripping_directory, self.ripping_directory_list, self.ripping_directory_size)
+        self.RIPPING_DIRECTORY = (
+            self.ripping_directory,
+            self.ripping_directory_list,
+            self.ripping_directory_size,
+        )
         # Set the value of the transcoding directory attribute
         self.transcoding_directory = transcoding_directory
         # Set the value of the transcoding directory list attribute
@@ -267,7 +316,11 @@ class Directories:
         # Set the value of the transcoding directory size attribute
         self.transcoding_directory_size = transcoding_directory_size
         # Create a tuple of the transcoding directory, the transcoding directory list and the transcoding directory size
-        self.TRANSCODING_DIRECTORY = (self.transcoding_directory, self.transcoding_directory_list, self.transcoding_directory_size)
+        self.TRANSCODING_DIRECTORY = (
+            self.transcoding_directory,
+            self.transcoding_directory_list,
+            self.transcoding_directory_size,
+        )
         # Assigning the value of transcoding_slot_1 to instance variable transcoding_slot_1
         self.transcoding_slot_1 = transcoding_slot_1
         # Assigning the value of transcoding_slot_1_list to instance variable transcoding_slot_1_list
@@ -275,7 +328,11 @@ class Directories:
         # Assigning the value of transcoding_slot_1_size to instance variable transcoding_slot_1_size
         self.transcoding_slot_1_size = transcoding_slot_1_size
         # Creating a tuple with the values of instance variables transcoding_slot_1, transcoding_slot_1_list, and transcoding_slot_1_size
-        self.TRANSCODING_SLOT_1 = (self.transcoding_slot_1, self.transcoding_slot_1_list, self.transcoding_slot_1_size)
+        self.TRANSCODING_SLOT_1 = (
+            self.transcoding_slot_1,
+            self.transcoding_slot_1_list,
+            self.transcoding_slot_1_size,
+        )
         # Assigning the value of transcoding_slot_2 to instance variable transcoding_slot_2
         self.transcoding_slot_2 = transcoding_slot_2
         # Assigning the value of transcoding_slot_2_list to instance variable transcoding_slot_2_list
@@ -283,7 +340,11 @@ class Directories:
         # Assigning the value of transcoding_slot_2_size to instance variable transcoding_slot_2_size
         self.transcoding_slot_2_size = transcoding_slot_2_size
         # Creating a tuple with the values of instance variables transcoding_slot_2, transcoding_slot_2_list, and transcoding_slot_2_size
-        self.TRANSCODING_SLOT_2 = (self.transcoding_slot_2, self.transcoding_slot_2_list, self.transcoding_slot_2_size)
+        self.TRANSCODING_SLOT_2 = (
+            self.transcoding_slot_2,
+            self.transcoding_slot_2_list,
+            self.transcoding_slot_2_size,
+        )
         # Assigning the value of transcoding_slot_3 to instance variable transcoding_slot_3
         self.transcoding_slot_3 = transcoding_slot_3
         # Assigning the value of transcoding_slot_3_list to instance variable transcoding_slot_3_list
@@ -291,9 +352,17 @@ class Directories:
         # Assigning the value of transcoding_slot_3_size to instance variable transcoding_slot_3_size
         self.transcoding_slot_3_size = transcoding_slot_3_size
         # Creating a tuple with the values of instance variables transcoding_slot_3, transcoding_slot_3_list, and transcoding_slot_3_size
-        self.TRANSCODING_SLOT_3 = (self.transcoding_slot_3, self.transcoding_slot_3_list, self.transcoding_slot_3_size)
+        self.TRANSCODING_SLOT_3 = (
+            self.transcoding_slot_3,
+            self.transcoding_slot_3_list,
+            self.transcoding_slot_3_size,
+        )
         # Define a list of transcoding slots each transcoding slot is represented as an instance variable of the class
-        self.TRANSCODING_SLOT_LIST = [self.transcoding_slot_1, self.transcoding_slot_2, self.transcoding_slot_3]
+        self.TRANSCODING_SLOT_LIST = [
+            self.transcoding_slot_1,
+            self.transcoding_slot_2,
+            self.transcoding_slot_3,
+        ]
         # Get a list of files in the ripping directory
         self.RIPPING_BAY_LIST = os.listdir(ripping_directory)
         # Define the name of ripping bay 1
@@ -304,27 +373,65 @@ class Directories:
         self.RIPPING_BAY_3 = ripping_bay_3
 
 
-
-
-
-
-
 def TEST():
     TEST = Directories()
-    print("DRIVE INFO | What you should see '('Drive size', 'Space used on Drive', 'Free space on Drive')' :  ", TEST.MAIN_DIRECTORY)
-    print("COLLECTION_DIRECTORY INFO | What you should see '('Directory location', 'A list of all the items in the Directory', 'Directory size')' :  ", TEST.COLLECTION_DIRECTORY)
-    print("COMPLETED_DIRECTORY INFO | What you should see '('Directory location', 'A list of all the items in the Directory', 'Directory size')' :  ", TEST.COMPLETED_DIRECTORY)
-    print("QUEUED_DIRECTORY INFO | What you should see '('Directory location', 'A list of all the items in the Directory', 'Directory size')' :  ", TEST.QUEUED_DIRECTORY)
-    print("RIPPING_DIRECTORY INFO | What you should see '('Directory location', 'A list of all the items in the Directory', 'Directory size')' :  ", TEST.RIPPING_DIRECTORY)
-    print("TRANSCODING_DIRECTORY INFO | What you should see '('Directory location', 'A list of all the items in the Directory', 'Directory size')' :  ", TEST.TRANSCODING_DIRECTORY)
-    print("TRANSCODING_SLOT_LIST INFO | What you should see '['A list of the Transcoding slot Directory locations']' :  ", TEST.TRANSCODING_SLOT_LIST)
-    print("TRANSCODING_SLOT_1 INFO | What you should see '('drive size', 'space used on drive', 'free space on drive')' :  ", TEST.TRANSCODING_SLOT_1)
-    print("TRANSCODING_SLOT_2 INFO | What you should see '('Directory location', 'A list of all the items in the Directory', 'Directory size')' :  ", TEST.TRANSCODING_SLOT_2)
-    print("TRANSCODING_SLOT_3 INFO | What you should see '('Directory location', 'A list of all the items in the Directory', 'Directory size')' :  ", TEST.TRANSCODING_SLOT_3)
-    print("RIPPING_BAY_LIST INFO | What you should see  '['A list of the Ripping Bay Directory locations']' :  ", TEST.RIPPING_BAY_LIST)
-    print("RIPPING_BAY_1 INFO | What you should see '('Drive letter', 'Drive number', '[Movie thats Ripping]', 'Directory size')' :  ", TEST.RIPPING_BAY_1)
-    print("RIPPING_BAY_2 INFO | What you should see '('Drive letter', 'Drive number', '[Movie thats Ripping]', 'Directory size')' :  ", TEST.RIPPING_BAY_2)
-    print("RIPPING_BAY_3 INFO | What you should see '('Drive letter', 'Drive number', '[Movie thats Ripping]', 'Directory size')' :  ", TEST.RIPPING_BAY_3)
+    print(
+        "DRIVE INFO | What you should see '('Drive size', 'Space used on Drive', 'Free space on Drive')' :  ",
+        TEST.MAIN_DIRECTORY,
+    )
+    print(
+        "COLLECTION_DIRECTORY INFO | What you should see '('Directory location', 'A list of all the items in the Directory', 'Directory size')' :  ",
+        TEST.COLLECTION_DIRECTORY,
+    )
+    print(
+        "COMPLETED_DIRECTORY INFO | What you should see '('Directory location', 'A list of all the items in the Directory', 'Directory size')' :  ",
+        TEST.COMPLETED_DIRECTORY,
+    )
+    print(
+        "QUEUED_DIRECTORY INFO | What you should see '('Directory location', 'A list of all the items in the Directory', 'Directory size')' :  ",
+        TEST.QUEUED_DIRECTORY,
+    )
+    print(
+        "RIPPING_DIRECTORY INFO | What you should see '('Directory location', 'A list of all the items in the Directory', 'Directory size')' :  ",
+        TEST.RIPPING_DIRECTORY,
+    )
+    print(
+        "TRANSCODING_DIRECTORY INFO | What you should see '('Directory location', 'A list of all the items in the Directory', 'Directory size')' :  ",
+        TEST.TRANSCODING_DIRECTORY,
+    )
+    print(
+        "TRANSCODING_SLOT_LIST INFO | What you should see '['A list of the Transcoding slot Directory locations']' :  ",
+        TEST.TRANSCODING_SLOT_LIST,
+    )
+    print(
+        "TRANSCODING_SLOT_1 INFO | What you should see '('drive size', 'space used on drive', 'free space on drive')' :  ",
+        TEST.TRANSCODING_SLOT_1,
+    )
+    print(
+        "TRANSCODING_SLOT_2 INFO | What you should see '('Directory location', 'A list of all the items in the Directory', 'Directory size')' :  ",
+        TEST.TRANSCODING_SLOT_2,
+    )
+    print(
+        "TRANSCODING_SLOT_3 INFO | What you should see '('Directory location', 'A list of all the items in the Directory', 'Directory size')' :  ",
+        TEST.TRANSCODING_SLOT_3,
+    )
+    print(
+        "RIPPING_BAY_LIST INFO | What you should see  '['A list of the Ripping Bay Directory locations']' :  ",
+        TEST.RIPPING_BAY_LIST,
+    )
+    print(
+        "RIPPING_BAY_1 INFO | What you should see '('Drive letter', 'Drive number', '[Movie thats Ripping]', 'Directory size')' :  ",
+        TEST.RIPPING_BAY_1,
+    )
+    print(
+        "RIPPING_BAY_2 INFO | What you should see '('Drive letter', 'Drive number', '[Movie thats Ripping]', 'Directory size')' :  ",
+        TEST.RIPPING_BAY_2,
+    )
+    print(
+        "RIPPING_BAY_3 INFO | What you should see '('Drive letter', 'Drive number', '[Movie thats Ripping]', 'Directory size')' :  ",
+        TEST.RIPPING_BAY_3,
+    )
+
 
 if __name__ == "__main__":
     TEST()
