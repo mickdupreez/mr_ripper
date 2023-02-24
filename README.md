@@ -127,6 +127,9 @@ To open and run the Mr Ripper program, follow these steps:
 2.  Open a terminal here by right clicking in the directory then selecting open in terminal, alternatively you can open a terminal and type `cd "the location of the directory where you extracted the Mr Ripper program" this will take you to the directory.
 3. Then finally type the following command to run the script
 
+
+
+#https://forum.makemkv.com/forum/viewtopic.php?t=1053
 ```bash
 python Mr_Ripper_v2.0.py
 ```
